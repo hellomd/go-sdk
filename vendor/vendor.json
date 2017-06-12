@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
+		},
+		{
+			"checksumSHA1": "DB7eoipX6KBANF3D9bAtvWLq+i8=",
+			"path": "github.com/urfave/negroni",
+			"revision": "3019daf414cfd2c51de68c3a535707c0de6e3d83",
+			"revisionTime": "2017-06-04T13:12:13Z"
+		}
+	],
+	"rootPath": "github.com/hellomd/middlewares"
+}
