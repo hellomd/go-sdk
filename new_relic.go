@@ -6,21 +6,21 @@ import (
 	newrelic "github.com/newrelic/go-agent"
 )
 
-// NewRelicMiddleware -
-type NewRelicMiddleware interface {
+// NewRelic -
+type NewRelic interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 }
 
-type newRelicMiddleware struct {
+type newRelic struct {
 	newRelicApp newrelic.Application
 }
 
 // NewNewRelic -
-func NewNewRelic(newRelicApp newrelic.Application) NewRelicMiddleware {
-	return &newRelicMiddleware{newRelicApp}
+func NewNewRelic(newRelicApp newrelic.Application) NewRelic {
+	return &newRelic{newRelicApp}
 }
 
-func (mw *newRelicMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (mw *newRelic) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	txn := mw.newRelicApp.StartTransaction(r.URL.Path, w, r)
 	defer txn.End()
 	next(w, r)
