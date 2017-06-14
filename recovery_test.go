@@ -36,7 +36,7 @@ func TestLogRecover(t *testing.T) {
 	fr := &fakeRavenClient{}
 
 	//Prepare Recovery Mid
-	recMid := NewRecoveryMiddleware(fr, logger)
+	recMid := NewRecovery(fr, logger)
 
 	//Prepare Server and response
 	response := httptest.NewRecorder()
