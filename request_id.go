@@ -12,7 +12,7 @@ type contextKey int
 const (
 	// RequestIDcontextKey -
 	RequestIDcontextKey contextKey = iota
-	headerKey                      = "X-Request-ID"
+	reqIDheaderKey                 = "X-Request-ID"
 )
 
 // RequestID -
@@ -29,10 +29,10 @@ func NewRequestID() RequestID {
 
 func (mw *requestID) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var rID string
-	if rID = r.Header.Get(headerKey); rID == "" {
+	if rID = r.Header.Get(reqIDheaderKey); rID == "" {
 		rID = uuid.NewV4().String()
 	}
 
-	w.Header().Set(headerKey, rID)
+	w.Header().Set(reqIDheaderKey, rID)
 	next(w, r.WithContext(context.WithValue(r.Context(), RequestIDcontextKey, rID)))
 }
