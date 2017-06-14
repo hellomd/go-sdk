@@ -1,0 +1,79 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "0hWqEc//bdHUtnxlAo/UPkHSIS0=",
+			"path": "github.com/certifi/gocertifi",
+			"revision": "a9c833d2837d3b16888d55d5aafa9ffe9afb22b0",
+			"revisionTime": "2017-04-17T19:39:30Z"
+		},
+		{
+			"checksumSHA1": "I8Ybx9m7RMmJpqXp3658gk42rBg=",
+			"path": "github.com/getsentry/raven-go",
+			"revision": "b9f2aa2550bb0e89ab351d6fd59decd608b84ac1",
+			"revisionTime": "2017-06-05T20:03:01Z"
+		},
+		{
+			"checksumSHA1": "fG/hdI57tzm9CfcELMa7QVXESR8=",
+			"path": "github.com/newrelic/go-agent",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "xOBMYhyCFUIXslS7AWykIUY6dUk=",
+			"path": "github.com/newrelic/go-agent/internal",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "mkbupMdy+cF7xyo8xW0A6Bq15k4=",
+			"path": "github.com/newrelic/go-agent/internal/jsonx",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "ywxlVKtGArJ2vDfH1rAqEFwSGds=",
+			"path": "github.com/newrelic/go-agent/internal/logger",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "S7CiHO7EblgZt9q7wgiXMv/j/ao=",
+			"path": "github.com/newrelic/go-agent/internal/sysinfo",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "c2JSKesj3tHYgzIF3QL37WfHWG8=",
+			"path": "github.com/newrelic/go-agent/internal/utilization",
+			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
+			"revisionTime": "2017-04-18T16:35:58Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
+		},
+		{
+			"checksumSHA1": "VHULZdEZKBxJvlZnlhX7Ug19lgY=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "85b1699d505667d13f8ac4478c1debbf85d6c5de",
+			"revisionTime": "2017-06-08T22:14:41Z"
+		},
+		{
+			"checksumSHA1": "DB7eoipX6KBANF3D9bAtvWLq+i8=",
+			"path": "github.com/urfave/negroni",
+			"revision": "3019daf414cfd2c51de68c3a535707c0de6e3d83",
+			"revisionTime": "2017-06-04T13:12:13Z"
+		},
+		{
+			"checksumSHA1": "8fD/im5Kwvy3JgmxulDTambmE8w=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "30de6d19a3bd89a5f38ae4028e23aaa5582648af",
+			"revisionTime": "2016-09-07T05:59:14Z"
+		}
+	],
+	"rootPath": "github.com/hellomd/middlewares"
+}
