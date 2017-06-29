@@ -8,7 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const realIPHeaderKey = "X-Real-IP"
+// RealIPHeaderKey -
+const RealIPHeaderKey = "X-Real-IP"
 
 // loggerReponseWriter - wrapper to ResponseWriter
 type loggerReponseWriter struct {
@@ -25,21 +26,21 @@ func (lrw *loggerReponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-// Logger -
-type Logger interface {
+// Middleware -
+type Middleware interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 }
 
-type logger struct {
+type middleware struct {
 	logger *logrus.Logger
 }
 
-// NewLogger -
-func NewLogger(l *logrus.Logger) Logger {
-	return &logger{l}
+// NewMiddleware -
+func NewMiddleware(l *logrus.Logger) Middleware {
+	return &middleware{l}
 }
 
-func (mw *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	start := time.Now()
 
 	lw := newLoggerReponseWriter(w)
@@ -48,12 +49,12 @@ func (mw *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 	entry := logrus.NewEntry(mw.logger)
 
 	remoteAddr := r.RemoteAddr
-	if realIP := r.Header.Get(realIPHeaderKey); realIP != "" {
+	if realIP := r.Header.Get(RealIPHeaderKey); realIP != "" {
 		remoteAddr = realIP
 	}
 
 	latency := time.Since(start)
-	requestID := r.Context().Value(requestid.RequestIDcontextKey)
+	requestID := r.Context().Value(requestid.RequestIDCtxKey)
 
 	entry.WithFields(logrus.Fields{
 		"request_id": requestID,

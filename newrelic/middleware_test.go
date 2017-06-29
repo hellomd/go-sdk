@@ -10,18 +10,15 @@ import (
 )
 
 func TestBasicNewRelic(t *testing.T) {
-	//Prepare NewRelic Mid
 	fakeNewRelic := newFakeNewRelicApp()
-	nrMid := NewNewRelic(fakeNewRelic)
+	nrMid := NewMiddleware(fakeNewRelic)
 
-	//Prepare Server, Request and Response
 	a := negroni.New(nrMid)
 	response := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/md", nil)
 
 	a.ServeHTTP(response, req)
 
-	//Assertions
 	if tx, ok := fakeNewRelic.transactions["/md"]; !ok {
 		t.Errorf("Expected transaction to /md path, got %v", fakeNewRelic.transactions)
 	} else {
@@ -34,7 +31,6 @@ func TestBasicNewRelic(t *testing.T) {
 
 }
 
-// Fake New Relic App
 type fakeNewRelicApp struct {
 	newrelic.Application
 	transactions map[string]*fakeNewRelicTx

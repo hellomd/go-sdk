@@ -21,17 +21,16 @@ const (
 )
 
 func TestBasicLogger(t *testing.T) {
-	//Prepare Logger
+	realIP := "127.0.0.1"
 	errBuffer := &bytes.Buffer{}
 	logger := logrus.New()
 	logger.Out = errBuffer
 
-	//Prepare server, response and request
-	srv := negroni.New(NewLogger(logger))
+	srv := negroni.New(NewMiddleware(logger))
 	response := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDcontextKey, myReqID))
+	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDCtxKey, myReqID))
+	req.Header.Add(RealIPHeaderKey, realIP)
 
-	//Set handler to set StatusOK header
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		w.WriteHeader(http.StatusAccepted)
 		next(w, r)
@@ -39,7 +38,6 @@ func TestBasicLogger(t *testing.T) {
 
 	srv.ServeHTTP(response, req)
 
-	//Assertions
 	if msg := errBuffer.String(); msg == "" {
 		t.Error("Log error is empty")
 	} else {
@@ -48,6 +46,9 @@ func TestBasicLogger(t *testing.T) {
 		}
 		if !strings.Contains(msg, "status=202") {
 			t.Errorf("Expected 202 in status, got '%v' in log", msg)
+		}
+		if !strings.Contains(msg, realIP) {
+			t.Errorf("Expected %v in RealIP, got '%v' in log", realIP, msg)
 		}
 	}
 
