@@ -1,4 +1,4 @@
-package middlewares
+package requestid
 
 import (
 	"net/http"

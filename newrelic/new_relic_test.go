@@ -1,4 +1,4 @@
-package middlewares
+package newrelic
 
 import (
 	"net/http"

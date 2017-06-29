@@ -1,9 +1,10 @@
-package middlewares
+package logger
 
 import (
 	"net/http"
 	"time"
 
+	"github.com/hellomd/middlewares/requestid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -52,7 +53,7 @@ func (mw *logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 	}
 
 	latency := time.Since(start)
-	requestID := r.Context().Value(RequestIDcontextKey)
+	requestID := r.Context().Value(requestid.RequestIDcontextKey)
 
 	entry.WithFields(logrus.Fields{
 		"request_id": requestID,
