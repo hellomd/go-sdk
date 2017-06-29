@@ -1,4 +1,4 @@
-package middlewares
+package logger
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 
 	"net/http"
 
+	"github.com/hellomd/middlewares/requestid"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
@@ -28,7 +29,7 @@ func TestBasicLogger(t *testing.T) {
 	//Prepare server, response and request
 	srv := negroni.New(NewLogger(logger))
 	response := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, RequestIDcontextKey, myReqID))
+	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDcontextKey, myReqID))
 
 	//Set handler to set StatusOK header
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

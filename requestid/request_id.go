@@ -1,11 +1,15 @@
-package middlewares
+package requestid
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	uuid "github.com/satori/go.uuid"
 )
+
+// ErrNoRequestIDInCtx -
+var ErrNoRequestIDInCtx = errors.New("No request id in context")
 
 type contextKey int
 
@@ -25,6 +29,15 @@ type requestID struct{}
 // NewRequestID -
 func NewRequestID() RequestID {
 	return &requestID{}
+}
+
+// GetRequestIDFromContext -
+func GetRequestIDFromContext(ctx context.Context) (string, error) {
+	id, ok := ctx.Value(RequestIDcontextKey).(string)
+	if !ok {
+		return "", ErrNoRequestIDInCtx
+	}
+	return id, nil
 }
 
 func (mw *requestID) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

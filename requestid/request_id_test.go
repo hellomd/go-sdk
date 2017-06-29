@@ -1,10 +1,12 @@
-package middlewares
+package requestid
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/urfave/negroni"
 )
 
@@ -58,4 +60,19 @@ func TestContextSet(t *testing.T) {
 
 	a.ServeHTTP(response, req)
 
+}
+
+func TestGetRequestIDFromContext(t *testing.T) {
+	ctx := context.Background()
+	_, err := GetRequestIDFromContext(ctx)
+	if err != ErrNoRequestIDInCtx {
+		t.Error("Expected ErrNoRequestIDInCtx, got: ", err)
+	}
+
+	expectedReqID := uuid.NewV4().String()
+	ctx = context.WithValue(ctx, RequestIDcontextKey, expectedReqID)
+	requestID, _ := GetRequestIDFromContext(ctx)
+	if requestID != expectedReqID {
+		t.Errorf("Expected %s, got: %s", expectedReqID, requestID)
+	}
 }

@@ -1,0 +1,9 @@
+test:
+    build: .
+    dockerfile: Dockerfile
+    environment: 
+        MONGO_URL: mongo_db
+    links: 
+        - mongo_db
+mongo_db:
+    image: mongo:3.0.15
