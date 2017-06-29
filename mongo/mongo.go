@@ -28,6 +28,15 @@ func NewMongo(mongoURL string, dbName string) Mongo {
 	return &mongo{s, dbName}
 }
 
+// GetMongoFromContext -
+func GetMongoFromContext(ctx context.Context) *mgo.Database {
+	db, ok := ctx.Value(MongoContextKey).(*mgo.Database)
+	if !ok {
+		panic("Could not lookup mongo from context")
+	}
+	return db
+}
+
 // ServeHTTP copies the db session, adds it to the request context
 // Closes the db session on defer
 func (mw *mongo) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

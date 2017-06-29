@@ -27,6 +27,15 @@ func NewRequestID() RequestID {
 	return &requestID{}
 }
 
+// GetRequestIDFromContext -
+func GetRequestIDFromContext(ctx context.Context) string {
+	id, ok := ctx.Value(RequestIDcontextKey).(string)
+	if !ok {
+		panic("Could not lookup requestID from context")
+	}
+	return id
+}
+
 func (mw *requestID) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var rID string
 	if rID = r.Header.Get(reqIDheaderKey); rID == "" {
