@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/urfave/negroni"
@@ -13,7 +14,7 @@ import (
 
 func TestMiddleware(t *testing.T) {
 	dbName := "test"
-	mongoMw := NewMongo("", dbName).(*mongo)
+	mongoMw := NewMongo(os.Getenv("MONGO_URL"), dbName).(*mongo)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 
