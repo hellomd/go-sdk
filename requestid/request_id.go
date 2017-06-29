@@ -2,10 +2,14 @@ package requestid
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	uuid "github.com/satori/go.uuid"
 )
+
+// ErrNoRequestIDInCtx -
+var ErrNoRequestIDInCtx = errors.New("No request id in context")
 
 type contextKey int
 
@@ -28,12 +32,12 @@ func NewRequestID() RequestID {
 }
 
 // GetRequestIDFromContext -
-func GetRequestIDFromContext(ctx context.Context) string {
+func GetRequestIDFromContext(ctx context.Context) (string, error) {
 	id, ok := ctx.Value(RequestIDcontextKey).(string)
 	if !ok {
-		panic("Could not lookup requestID from context")
+		return "", ErrNoRequestIDInCtx
 	}
-	return id
+	return id, nil
 }
 
 func (mw *requestID) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

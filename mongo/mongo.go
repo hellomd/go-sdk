@@ -2,10 +2,14 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
 )
+
+// ErrNoMongoInCtx -
+var ErrNoMongoInCtx = errors.New("No mongo in context")
 
 type mongoContextKey int
 
@@ -29,12 +33,12 @@ func NewMongo(mongoURL string, dbName string) Mongo {
 }
 
 // GetMongoFromContext -
-func GetMongoFromContext(ctx context.Context) *mgo.Database {
+func GetMongoFromContext(ctx context.Context) (*mgo.Database, error) {
 	db, ok := ctx.Value(MongoContextKey).(*mgo.Database)
 	if !ok {
-		panic("Could not lookup mongo from context")
+		return nil, ErrNoMongoInCtx
 	}
-	return db
+	return db, nil
 }
 
 // ServeHTTP copies the db session, adds it to the request context
