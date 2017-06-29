@@ -14,21 +14,21 @@ import (
 
 func TestMiddleware(t *testing.T) {
 	dbName := "test"
-	mongoMw := NewMongo(os.Getenv("MONGO_URL"), dbName).(*mongo)
+	mw := NewMiddleware(os.Getenv("MONGO_URL"), dbName).(*middleware)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 
 	a := negroni.New()
-	a.Use(mongoMw)
+	a.Use(mw)
 	a.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		v, ok := r.Context().Value(MongoContextKey).(*mgo.Database)
+		v, ok := r.Context().Value(MongoCtxKey).(*mgo.Database)
 		if !ok {
 			t.Error("Expected database on context")
 		}
 		if v.Name != dbName {
 			t.Errorf("Expected %s database name, got: %s", dbName, v.Name)
 		}
-		if v.Session == mongoMw.session {
+		if v.Session == mw.session {
 			t.Errorf("Expected session to be different from stored session")
 		}
 		next(w, r)
@@ -40,14 +40,14 @@ func TestMiddleware(t *testing.T) {
 
 func TestGetMongoFromContext(t *testing.T) {
 	ctx := context.Background()
-	_, err := GetMongoFromContext(ctx)
+	_, err := GetMongoFromCtx(ctx)
 	if err != ErrNoMongoInCtx {
 		t.Error("Expected ErrNoMongoInCtx, got: ", err)
 	}
 
 	expectedDB := &mgo.Database{}
-	ctx = context.WithValue(ctx, MongoContextKey, expectedDB)
-	db, _ := GetMongoFromContext(ctx)
+	ctx = context.WithValue(ctx, MongoCtxKey, expectedDB)
+	db, _ := GetMongoFromCtx(ctx)
 	if db != expectedDB {
 		t.Errorf("Expected %v, got: %v", expectedDB, db)
 	}

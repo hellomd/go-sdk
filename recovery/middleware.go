@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Recovery -
-type Recovery interface {
+// Middleware -
+type Middleware interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 }
 
@@ -20,17 +20,17 @@ type RavenClient interface {
 	SetHttpContext(*raven.Http)
 }
 
-type recovery struct {
+type middleware struct {
 	RavenClient
 	*logrus.Logger
 }
 
-// NewRecovery -
-func NewRecovery(ravenClient RavenClient, logger *logrus.Logger) Recovery {
-	return &recovery{ravenClient, logger}
+// NewMiddleware -
+func NewMiddleware(ravenClient RavenClient, logger *logrus.Logger) Middleware {
+	return &middleware{ravenClient, logger}
 }
 
-func (mw *recovery) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	defer func() {
 		if err := recover(); err != nil {
 			mw.SetHttpContext(raven.NewHttp(r))

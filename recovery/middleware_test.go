@@ -27,31 +27,24 @@ const (
 )
 
 func TestLogRecover(t *testing.T) {
-	//Prepare Logger
 	errBuffer := &bytes.Buffer{}
 	logger := logrus.New()
 	logger.Out = errBuffer
 
-	//Prepare Fake Raven
 	fr := &fakeRavenClient{}
 
-	//Prepare Recovery Mid
-	recMid := NewRecovery(fr, logger)
+	recMid := NewMiddleware(fr, logger)
 
-	//Prepare Server and response
 	response := httptest.NewRecorder()
 	srv := negroni.New(recMid)
 
-	//Set handler to panic!
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		panic(panicMsg)
 	})
 
-	//Prepare request and serve
 	testReq := httptest.NewRequest("GET", "/", nil)
 	srv.ServeHTTP(response, testReq)
 
-	//Assertions
 	if response.Code != http.StatusInternalServerError {
 		t.Errorf("Response Code should be %v, got %v", http.StatusInternalServerError, response.Code)
 	}
@@ -81,7 +74,6 @@ func TestLogRecover(t *testing.T) {
 
 }
 
-// Fake Raven Client
 type fakeRavenClient struct {
 	httpContext *raven.Http
 	errors      []string
