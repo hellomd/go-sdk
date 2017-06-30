@@ -3,6 +3,24 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "HROD70mRdzdNUe75rokYa0agThc=",
+			"path": "github.com/DATA-DOG/godog",
+			"revision": "bfe2b72dcbfd0f8dfd3858122edd26654a9771e8",
+			"revisionTime": "2017-06-09T08:45:38Z"
+		},
+		{
+			"checksumSHA1": "wbBy+PwuadGhTgX7IP05lwIR+Qs=",
+			"path": "github.com/DATA-DOG/godog/colors",
+			"revision": "bfe2b72dcbfd0f8dfd3858122edd26654a9771e8",
+			"revisionTime": "2017-06-09T08:45:38Z"
+		},
+		{
+			"checksumSHA1": "LCu7pjQ5nMZ505XwUU7tQQ1hBuM=",
+			"path": "github.com/DATA-DOG/godog/gherkin",
+			"revision": "bfe2b72dcbfd0f8dfd3858122edd26654a9771e8",
+			"revisionTime": "2017-06-09T08:45:38Z"
+		},
+		{
 			"checksumSHA1": "0hWqEc//bdHUtnxlAo/UPkHSIS0=",
 			"path": "github.com/certifi/gocertifi",
 			"revision": "a9c833d2837d3b16888d55d5aafa9ffe9afb22b0",
