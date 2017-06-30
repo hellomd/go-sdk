@@ -23,12 +23,16 @@ func (p *basicPager) SetPerPage(perPage int) {
 	p.perPage = perPage
 }
 
-func (p *basicPager) GetNextPage() int {
-	return p.page + 1
+func (p *basicPager) GetPage() int {
+	return p.page
 }
 
 func (p *basicPager) GetPerPage() int {
 	return p.perPage
+}
+
+func (p *basicPager) GetNextPage() int {
+	return p.page + 1
 }
 
 func (p *basicPager) GetURL() string {

@@ -4,7 +4,8 @@ package pagination
 type Pager interface {
 	SetPage(int)
 	SetPerPage(int)
-	GetNextPage() int
+	GetPage() int
 	GetPerPage() int
+	GetNextPage() int
 	GetURL() string
 }
