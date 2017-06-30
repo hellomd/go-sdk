@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hellomd/middlewares/requestid"
+	"github.com/hellomd/go-sdk/requestid"
 	"github.com/sirupsen/logrus"
 )
 

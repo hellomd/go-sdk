@@ -11,7 +11,7 @@ import (
 
 	"net/http"
 
-	"github.com/hellomd/middlewares/requestid"
+	"github.com/hellomd/go-sdk/requestid"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )

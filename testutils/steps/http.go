@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/DATA-DOG/godog/gherkin"
-	"github.com/hellomd/middlewares/testutils"
+	"github.com/hellomd/go-sdk/testutils"
 )
 
 func httpRequest(method string, server *httptest.Server, uri string, body *gherkin.DocString, contentType string) (*http.Response, error) {

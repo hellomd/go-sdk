@@ -1,8 +1,8 @@
 package mongo
 
 import (
-	"github.com/hellomd/middlewares/config"
-	"github.com/hellomd/middlewares/random"
+	"github.com/hellomd/go-sdk/config"
+	"github.com/hellomd/go-sdk/random"
 	mgo "gopkg.in/mgo.v2"
 )
 
