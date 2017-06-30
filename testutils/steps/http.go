@@ -12,7 +12,8 @@ import (
 	"github.com/hellomd/go-sdk/testutils"
 )
 
-func httpRequest(method string, server *httptest.Server, uri string, body *gherkin.DocString, contentType string) (*http.Response, error) {
+// HTTPRequest -
+func HTTPRequest(method string, server *httptest.Server, uri string, body *gherkin.DocString, contentType string, headers map[string]string) (*http.Response, error) {
 	var content io.Reader
 	if body != nil {
 		content = strings.NewReader(body.Content)
@@ -30,32 +31,36 @@ func httpRequest(method string, server *httptest.Server, uri string, body *gherk
 	}
 	req.Header.Add("Content-Type", contentType)
 
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
+
 	return http.DefaultClient.Do(req)
 }
 
 // IGetFrom -
 func IGetFrom(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
-	return httpRequest("GET", server, uri, body, "")
+	return HTTPRequest("GET", server, uri, body, "", nil)
 }
 
 // IPostTo -
 func IPostTo(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
-	return httpRequest("POST", server, uri, body, "")
+	return HTTPRequest("POST", server, uri, body, "", nil)
 }
 
 // IPostToAs -
 func IPostToAs(server *httptest.Server, uri string, as string, body *gherkin.DocString) (*http.Response, error) {
-	return httpRequest("POST", server, uri, body, as)
+	return HTTPRequest("POST", server, uri, body, as, nil)
 }
 
 // IPutOn -
 func IPutOn(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
-	return httpRequest("PUT", server, uri, body, "")
+	return HTTPRequest("PUT", server, uri, body, "", nil)
 }
 
 // IDeleteFrom -
 func IDeleteFrom(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
-	return httpRequest("DELETE", server, uri, body, "")
+	return HTTPRequest("DELETE", server, uri, body, "", nil)
 }
 
 // TheStatusCodeShouldBe -
@@ -86,6 +91,12 @@ func TheStatusCodeShouldBe(response *http.Response, statusText string) error {
 	case "Bad Request":
 		if response.StatusCode != http.StatusBadRequest {
 			return fmt.Errorf("Expected status code 400 (Bad Request), but got %v instead",
+				response.StatusCode)
+		}
+
+	case "Forbidden":
+		if response.StatusCode != http.StatusForbidden {
+			return fmt.Errorf("Expected status code 403 (Forbidden), but got %v instead",
 				response.StatusCode)
 		}
 
