@@ -7,8 +7,8 @@ const (
 	SortQueryParam = "sort"
 )
 
-// CollectFields -
-func CollectFields(query map[string][]string, sorter Sorter) error {
+// Collect -
+func Collect(query map[string][]string, sorter Sorter) error {
 	validFields := sorter.GetValidFields()
 	for _, v := range query[SortQueryParam] {
 		if _, ok := validFields[v]; !ok {

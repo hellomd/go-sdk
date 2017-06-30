@@ -22,8 +22,8 @@ func collectParam(key string, query map[string][]string) (int, error) {
 	return 0, nil
 }
 
-// GetPage -
-func GetPage(query map[string][]string, pager Pager) error {
+// CollectPage -
+func CollectPage(query map[string][]string, pager Pager) error {
 	page, err := collectParam(PageQueryParam, query)
 	if err != nil {
 		return err
@@ -35,14 +35,28 @@ func GetPage(query map[string][]string, pager Pager) error {
 	return nil
 }
 
-// GetPerPage -
-func GetPerPage(query map[string][]string, pager Pager) error {
+// CollectPerPage -
+func CollectPerPage(query map[string][]string, pager Pager) error {
 	perPage, err := collectParam(PerPageQueryParam, query)
 	if err != nil {
 		return err
 	}
 	if perPage != 0 {
 		pager.SetPerPage(perPage)
+	}
+	return nil
+}
+
+// Collect -
+func Collect(query map[string][]string, pager Pager) error {
+	err := CollectPage(query, pager)
+	if err != nil {
+		return err
+	}
+
+	err = CollectPerPage(query, pager)
+	if err != nil {
+		return err
 	}
 	return nil
 }
