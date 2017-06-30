@@ -31,7 +31,6 @@ func CollectPage(query map[string][]string, pager Pager) error {
 	if page != 0 {
 		pager.SetPage(page)
 	}
-	pager.SetPage(page)
 	return nil
 }
 
