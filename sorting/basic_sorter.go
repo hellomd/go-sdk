@@ -6,9 +6,13 @@ type basicSorter struct {
 }
 
 // NewBasicSorter -
-func NewBasicSorter(validFields map[string]bool) Sorter {
+func NewBasicSorter(validFields []string) Sorter {
+	vfMap := make(map[string]bool)
+	for _, v := range validFields {
+		vfMap[v] = true
+	}
 	return &basicSorter{
-		validFields: validFields,
+		validFields: vfMap,
 	}
 }
 
