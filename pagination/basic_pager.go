@@ -1,17 +1,19 @@
 package pagination
 
 type basicPager struct {
-	page    int
-	perPage int
-	url     string
+	page       int
+	perPage    int
+	maxPerPage int
+	url        string
 }
 
 // NewBasicPager -
-func NewBasicPager(url string, defaultPerPage int) Pager {
+func NewBasicPager(url string, defaultPerPage, maxPerPage int) Pager {
 	return &basicPager{
-		page:    1,
-		url:     url,
-		perPage: defaultPerPage,
+		page:       1,
+		url:        url,
+		perPage:    defaultPerPage,
+		maxPerPage: maxPerPage,
 	}
 }
 
@@ -29,6 +31,10 @@ func (p *basicPager) GetPage() int {
 
 func (p *basicPager) GetPerPage() int {
 	return p.perPage
+}
+
+func (p *basicPager) GetMaxPerPage() int {
+	return p.maxPerPage
 }
 
 func (p *basicPager) GetNextPage() int {

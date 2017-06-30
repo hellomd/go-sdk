@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"errors"
 	"strconv"
 )
 
@@ -10,6 +11,9 @@ const (
 	// PerPageQueryParam -
 	PerPageQueryParam = "perPage"
 )
+
+// ErrMaxPerPageExceeded -
+var ErrMaxPerPageExceeded = errors.New("Max per page exceeded")
 
 func collectParam(key string, query map[string][]string) (int, error) {
 	if len(query[key]) > 0 {
@@ -36,9 +40,13 @@ func CollectPage(query map[string][]string, pager Pager) error {
 
 // CollectPerPage -
 func CollectPerPage(query map[string][]string, pager Pager) error {
+	maxPerPage := pager.GetMaxPerPage()
 	perPage, err := collectParam(PerPageQueryParam, query)
 	if err != nil {
 		return err
+	}
+	if perPage > maxPerPage {
+		return ErrMaxPerPageExceeded
 	}
 	if perPage != 0 {
 		pager.SetPerPage(perPage)

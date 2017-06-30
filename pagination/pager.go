@@ -6,6 +6,7 @@ type Pager interface {
 	SetPerPage(int)
 	GetPage() int
 	GetPerPage() int
+	GetMaxPerPage() int
 	GetNextPage() int
 	GetURL() string
 }
