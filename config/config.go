@@ -20,3 +20,13 @@ func Get(key Key) string {
 	}
 	return rs
 }
+
+func Set(key Key, value string) error {
+	err := os.Setenv(string(key), value)
+	if err != nil {
+		return err
+	}
+
+	config[key] = value
+	return nil
+}
