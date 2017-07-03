@@ -43,6 +43,10 @@ func IGetFrom(server *httptest.Server, uri string, body *gherkin.DocString) (*ht
 	return HTTPRequest("GET", server, uri, body, "", nil)
 }
 
+func IHeadFrom(server *httptest.Server, uri string) (*http.Response, error) {
+	return HTTPRequest("HEAD", server, uri, nil, "", nil)
+}
+
 // IPostTo -
 func IPostTo(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
 	return HTTPRequest("POST", server, uri, body, "", nil)
