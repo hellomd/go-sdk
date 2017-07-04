@@ -73,39 +73,8 @@ func TheStatusCodeShouldBe(response *http.Response, statusText string) error {
 		return fmt.Errorf("Expected a recorded response")
 	}
 
-	switch statusText {
-	case "OK":
-		if response.StatusCode != http.StatusOK {
-			return fmt.Errorf("Expected status code 200 (OK), but got %v instead",
-				response.StatusCode)
-		}
-
-	case "Not Found":
-		if response.StatusCode != http.StatusNotFound {
-			return fmt.Errorf("Expected status code 404 (Not Found), but got %v instead",
-				response.StatusCode)
-		}
-
-	case "Unprocessable Entity":
-		if response.StatusCode != http.StatusUnprocessableEntity {
-			return fmt.Errorf("Expected status code 422 (Unprocessable Entity), but got %v instead",
-				response.StatusCode)
-		}
-
-	case "Bad Request":
-		if response.StatusCode != http.StatusBadRequest {
-			return fmt.Errorf("Expected status code 400 (Bad Request), but got %v instead",
-				response.StatusCode)
-		}
-
-	case "Forbidden":
-		if response.StatusCode != http.StatusForbidden {
-			return fmt.Errorf("Expected status code 403 (Forbidden), but got %v instead",
-				response.StatusCode)
-		}
-
-	default:
-		return fmt.Errorf("Invalid status code %s", statusText)
+	if http.StatusText(response.StatusCode) != statusText {
+		return fmt.Errorf("Expected status %v, but got %v instead", statusText, http.StatusText(response.StatusCode))
 	}
 
 	return nil
