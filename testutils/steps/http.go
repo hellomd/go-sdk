@@ -67,6 +67,21 @@ func IDeleteFrom(server *httptest.Server, uri string, body *gherkin.DocString) (
 	return HTTPRequest("DELETE", server, uri, body, "", nil)
 }
 
+func TheResponseHeadersShouldContain(response *http.Response, table *gherkin.DataTable) error {
+	for _, row := range testutils.ParseTable(table) {
+		if value, ok := response.Header[row["Header"]]; ok {
+			if value[0] != row["Value"] {
+				return fmt.Errorf("response header %v value is not as expected \nReturned: %v\nExpected: %v\n",
+					row["Header"], value[0], row["Value"])
+			}
+		} else {
+			return fmt.Errorf(" response header not found\nExpected: %v: %v\n", row["Header"], row["Value"])
+		}
+	}
+
+	return nil
+}
+
 // TheStatusCodeShouldBe -
 func TheStatusCodeShouldBe(response *http.Response, statusText string) error {
 	if response == nil {
