@@ -3,7 +3,9 @@ package pagination
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -12,7 +14,7 @@ const (
 	// LinkHeaderKey -
 	LinkHeaderKey = "Link"
 	// LinkTemplate -
-	LinkTemplate = "<%s?page=%d&perPage=%d>; rel=\"next\""
+	LinkTemplate = "<%s?%s>; rel=\"next\""
 )
 
 // SetTotalHeader -
@@ -21,6 +23,20 @@ func SetTotalHeader(h http.Header, count int) {
 }
 
 // SetLinkHeader -
-func SetLinkHeader(h http.Header, pager Pager) {
-	h.Set(LinkHeaderKey, fmt.Sprintf(LinkTemplate, pager.GetURL(), pager.GetNextPage(), pager.GetPerPage()))
+func SetLinkHeader(h http.Header, query map[string][]string, pager Pager) {
+	x := []string{}
+
+	query["page"] = []string{strconv.Itoa(pager.GetNextPage())}
+
+	for k, v := range query {
+		if len(v) == 1 {
+			x = append(x, fmt.Sprintf("%s=%s", k, v[0]))
+		} else {
+			x = append(x, fmt.Sprintf("%s=[%s]", k, strings.Join(v, ", ")))
+		}
+	}
+
+	sort.Strings(x)
+
+	h.Set(LinkHeaderKey, fmt.Sprintf(LinkTemplate, pager.GetURL(), strings.Join(x, "&")))
 }
