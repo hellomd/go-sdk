@@ -10,8 +10,8 @@ const (
 	//ETagHeaderKey -
 	ETagHeaderKey = "ETag"
 
-	//IfNonMatchHeaderKey -
-	IfNonMatchHeaderKey = "If-None-Match"
+	//IfNoneMatchHeaderKey -
+	IfNoneMatchHeaderKey = "If-None-Match"
 )
 
 type etagResponseWriter struct {
@@ -23,7 +23,7 @@ type etagResponseWriter struct {
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	etag := etag(b)
 	erw.Header().Set(ETagHeaderKey, etag)
-	if erw.req.Header.Get(IfNonMatchHeaderKey) == etag {
+	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
 		erw.WriteHeader(http.StatusNotModified)
 		return erw.Write(nil)
 	}

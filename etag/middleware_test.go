@@ -37,7 +37,7 @@ func TestResponseNotModified(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	req := httptest.NewRequest("GET", "/", nil)
-	req.Header.Add(IfNonMatchHeaderKey, etag([]byte(data)))
+	req.Header.Add(IfNoneMatchHeaderKey, etag([]byte(data)))
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		w.Write([]byte(data))
