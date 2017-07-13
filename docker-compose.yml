@@ -3,7 +3,11 @@ test:
     dockerfile: Dockerfile
     environment: 
         MONGO_URL: mongo_db
+        AMQP_URL: "amqp://guest:guest@rabbit"
     links: 
         - mongo_db
+        - rabbit
 mongo_db:
     image: mongo:3.0.15
+rabbit:
+    image: rabbitmq:3-alpine
