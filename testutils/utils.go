@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"reflect"
+	"time"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -119,6 +120,16 @@ func FillStruct(s interface{}, m map[string]string) error {
 
 		if structFieldValue.Type() == reflect.TypeOf(bson.NewObjectId()) {
 			structFieldValue.Set(reflect.ValueOf(bson.ObjectIdHex(value)))
+			continue
+		}
+
+		if structFieldValue.Type() == reflect.TypeOf(time.Time{}) {
+			fieldTime, err := time.Parse(time.RFC3339Nano, value)
+			if err != nil {
+				return fmt.Errorf("Cannot set %s as a date", name)
+			}
+
+			structFieldValue.Set(reflect.ValueOf(fieldTime))
 			continue
 		}
 
