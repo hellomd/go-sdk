@@ -16,19 +16,22 @@ const (
 
 type etagResponseWriter struct {
 	http.ResponseWriter
-	req  *http.Request
-	code int
+	req         *http.Request
+	code        int
+	wroteHeader bool
 }
 
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	etag := etag(b)
 	erw.Header().Set(ETagHeaderKey, etag)
 	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
-		erw.WriteHeader(http.StatusNotModified)
-		return erw.Write(nil)
+		erw.ResponseWriter.WriteHeader(http.StatusNotModified)
+		return erw.ResponseWriter.Write(nil)
 	}
-
-	erw.WriteHeader(erw.code)
+	if erw.wroteHeader == false {
+		erw.wroteHeader = true
+		erw.ResponseWriter.WriteHeader(erw.code)
+	}
 	return erw.ResponseWriter.Write(b)
 }
 
@@ -38,7 +41,6 @@ func etag(data []byte) string {
 
 func (erw *etagResponseWriter) WriteHeader(code int) {
 	erw.code = code
-	erw.ResponseWriter.WriteHeader(code)
 }
 
 // Middleware -
@@ -54,5 +56,9 @@ func NewMiddleware() Middleware {
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	next(&etagResponseWriter{w, r, http.StatusOK}, r)
+	writer := &etagResponseWriter{w, r, http.StatusOK, false}
+	next(writer, r)
+	if !writer.wroteHeader {
+		writer.ResponseWriter.WriteHeader(writer.code)
+	}
 }
