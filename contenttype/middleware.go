@@ -24,17 +24,18 @@ func NewMiddleware() Middleware {
 
 type contentTypeResponseWriter struct {
 	http.ResponseWriter
-	r *http.Request
 }
 
 func (erw *contentTypeResponseWriter) Write(b []byte) (int, error) {
 	if b != nil && erw.ResponseWriter.Header().Get(contentTypeHeaderKey) == "" {
 		erw.ResponseWriter.Header().Set(contentTypeHeaderKey, defaultContentType)
+	} else {
+		erw.ResponseWriter.Header().Set(contentTypeHeaderKey, http.DetectContentType(b))
 	}
 	return erw.ResponseWriter.Write(b)
 }
 
 // ServeHTTP -
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	next(&contentTypeResponseWriter{w, r}, r)
+	next(&contentTypeResponseWriter{w}, r)
 }

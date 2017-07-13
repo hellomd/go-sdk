@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/negroni"
 )
 
-func TestMiddleware(t *testing.T) {
+func TestMiddlewareAppliesDefault(t *testing.T) {
 	mw := NewMiddleware().(*middleware)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
@@ -47,7 +47,8 @@ func TestMiddlewareRespectsPreviouslySet(t *testing.T) {
 	}
 }
 
-func TestMiddlewareDoesNothingOnEmptyBody(t *testing.T) {
+func TestMiddlewareDefaultsToDetectedContentTypeOnEmptyBody(t *testing.T) {
+	expectedContentType := http.DetectContentType(nil)
 	mw := NewMiddleware().(*middleware)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
@@ -55,12 +56,13 @@ func TestMiddlewareDoesNothingOnEmptyBody(t *testing.T) {
 	a := negroni.New()
 	a.Use(mw)
 	a.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		w.Write(nil)
 		next(w, r)
 	}))
 
 	a.ServeHTTP(response, req)
 	contentType := response.Header().Get(contentTypeHeaderKey)
-	if contentType != "" {
-		t.Errorf("Expected no Content-Type got %s", contentType)
+	if contentType != expectedContentType {
+		t.Errorf("Expected Content-Type %s, got %s", expectedContentType, contentType)
 	}
 }
