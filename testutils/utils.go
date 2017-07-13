@@ -142,10 +142,10 @@ func FillStruct(s interface{}, m map[string]string) error {
 func CreateSlice(t interface{}, m []map[string]string) interface{} {
 	kind := reflect.TypeOf(t)
 
-	arr := reflect.MakeSlice(kind, 0, 0)
+	arr := reflect.MakeSlice(reflect.SliceOf(kind), 0, 0)
 
 	for _, i := range m {
-		v := reflect.New(kind.Elem())
+		v := reflect.New(kind)
 		FillStruct(v.Interface(), i)
 		arr = reflect.Append(arr, v.Elem())
 	}
