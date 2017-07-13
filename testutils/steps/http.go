@@ -43,6 +43,7 @@ func IGetFrom(server *httptest.Server, uri string, body *gherkin.DocString) (*ht
 	return HTTPRequest("GET", server, uri, body, "", nil)
 }
 
+// IHeadFrom -
 func IHeadFrom(server *httptest.Server, uri string) (*http.Response, error) {
 	return HTTPRequest("HEAD", server, uri, nil, "", nil)
 }
@@ -62,11 +63,17 @@ func IPutOn(server *httptest.Server, uri string, body *gherkin.DocString) (*http
 	return HTTPRequest("PUT", server, uri, body, "", nil)
 }
 
+// IPatchOn -
+func IPatchOn(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
+	return HTTPRequest("PATCH", server, uri, body, "", nil)
+}
+
 // IDeleteFrom -
 func IDeleteFrom(server *httptest.Server, uri string, body *gherkin.DocString) (*http.Response, error) {
 	return HTTPRequest("DELETE", server, uri, body, "", nil)
 }
 
+// TheResponseHeadersShouldContain -
 func TheResponseHeadersShouldContain(response *http.Response, table *gherkin.DataTable) error {
 	for _, row := range testutils.ParseTable(table) {
 		if value, ok := response.Header[row["Header"]]; ok {
