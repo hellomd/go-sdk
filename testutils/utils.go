@@ -2,7 +2,10 @@ package testutils
 
 import (
 	"container/list"
+	"fmt"
 	"reflect"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/DATA-DOG/godog/gherkin"
 )
@@ -98,4 +101,42 @@ func JSONEqualsIgnoreOrder(j1, j2 interface{}) bool {
 	}
 
 	panic("Unrecognized unmarshalled JSON type")
+}
+
+// FillStruct reads map 'm' and fills struct from pointer 's' with respective fields on 'm'
+func FillStruct(s interface{}, m map[string]string) error {
+	structValue := reflect.ValueOf(s).Elem()
+	for name, value := range m {
+
+		structFieldValue := structValue.FieldByName(name)
+		if !structFieldValue.IsValid() {
+			return fmt.Errorf("No such field: %s in obj", name)
+		}
+
+		if !structFieldValue.CanSet() {
+			return fmt.Errorf("Cannot set %s field value", name)
+		}
+
+		if structFieldValue.Type() == reflect.TypeOf(bson.NewObjectId()) {
+			structFieldValue.Set(reflect.ValueOf(bson.ObjectIdHex(value)))
+			continue
+		}
+
+		structFieldValue.Set(reflect.ValueOf(value))
+	}
+	return nil
+}
+
+// CreateSlice returns a new slice of type 't' filled with data from 'm' array of map
+func CreateSlice(t interface{}, m []map[string]string) interface{} {
+	kind := reflect.TypeOf(t)
+
+	arr := reflect.MakeSlice(kind, 0, 0)
+
+	for _, i := range m {
+		v := reflect.New(kind.Elem())
+		FillStruct(v.Interface(), i)
+		arr = reflect.Append(arr, v.Elem())
+	}
+	return arr.Interface()
 }
