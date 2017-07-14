@@ -98,7 +98,7 @@ func TestPanicsOnSecondWrite(t *testing.T) {
 				thrownError = r.(error)
 			}
 		}()
-		defer w.Write([]byte(data))
+		w.Write([]byte(data))
 		next(w, r)
 	})
 
