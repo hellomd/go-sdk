@@ -8,6 +8,8 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"strings"
+
 	"github.com/DATA-DOG/godog/gherkin"
 )
 
@@ -118,12 +120,12 @@ func FillStruct(s interface{}, m map[string]string) error {
 			return fmt.Errorf("Cannot set %s field value", name)
 		}
 
-		if structFieldValue.Type() == reflect.TypeOf(bson.NewObjectId()) {
+		switch structFieldValue.Type() {
+		case reflect.TypeOf(bson.NewObjectId()):
 			structFieldValue.Set(reflect.ValueOf(bson.ObjectIdHex(value)))
 			continue
-		}
 
-		if structFieldValue.Type() == reflect.TypeOf(time.Time{}) {
+		case reflect.TypeOf(time.Time{}):
 			fieldTime, err := time.Parse(time.RFC3339Nano, value)
 			if err != nil {
 				return fmt.Errorf("Cannot set %s as a date", name)
@@ -131,9 +133,14 @@ func FillStruct(s interface{}, m map[string]string) error {
 
 			structFieldValue.Set(reflect.ValueOf(fieldTime))
 			continue
-		}
 
-		structFieldValue.Set(reflect.ValueOf(value))
+		case reflect.TypeOf([]string{}):
+			structFieldValue.Set(reflect.ValueOf(strings.Split(value, ",")))
+			continue
+
+		default:
+			structFieldValue.Set(reflect.ValueOf(value))
+		}
 	}
 	return nil
 }
