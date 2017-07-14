@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 )
 
 var (
-	errDoubleWrite = errors.New("Write called twice with ETag Middleware")
+	errDoubleWrite = errors.New("write called twice with ETag Middleware")
 )
 
 type etagResponseWriter struct {
@@ -25,6 +26,8 @@ type etagResponseWriter struct {
 	code        int
 	wroteHeader bool
 	wroteBody   bool
+	headerLock  sync.Mutex
+	bodyLock    sync.Mutex
 }
 
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
@@ -32,7 +35,9 @@ func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	erw.Header().Set(ETagHeaderKey, etag)
 
 	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
-		erw.code = http.StatusNotModified
+		if erw.req.Method == http.MethodGet {
+			erw.code = http.StatusNotModified
+		}
 		erw.writeHeader()
 		return erw.writeBody(nil)
 	}
@@ -46,6 +51,9 @@ func calculateEtag(data []byte) string {
 }
 
 func (erw *etagResponseWriter) writeBody(data []byte) (int, error) {
+	erw.bodyLock.Lock()
+	defer erw.bodyLock.Unlock()
+
 	if erw.wroteBody {
 		panic(errDoubleWrite)
 	}
@@ -54,6 +62,9 @@ func (erw *etagResponseWriter) writeBody(data []byte) (int, error) {
 }
 
 func (erw *etagResponseWriter) writeHeader() {
+	erw.headerLock.Lock()
+	defer erw.headerLock.Unlock()
+
 	if !erw.wroteHeader {
 		erw.wroteHeader = true
 		erw.ResponseWriter.WriteHeader(erw.code)
@@ -77,11 +88,7 @@ func NewMiddleware() Middleware {
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	if r.Method == http.MethodGet {
-		writer := &etagResponseWriter{w, r, http.StatusOK, false, false}
-		next(writer, r)
-		writer.writeHeader()
-	} else {
-		next(w, r)
-	}
+	writer := &etagResponseWriter{w, r, http.StatusOK, false, false, sync.Mutex{}, sync.Mutex{}}
+	next(writer, r)
+	writer.writeHeader()
 }

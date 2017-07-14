@@ -55,7 +55,7 @@ func TestResponseNotModified(t *testing.T) {
 	}
 }
 
-func TestResponseIgnoresNonGetRequests(t *testing.T) {
+func TestResponseNotModifiedOnlyOnGet(t *testing.T) {
 	for _, method := range []string{"POST", "DELETE", "PUT", "PATCH", "HEAD"} {
 		srv := negroni.New(NewMiddleware())
 		response := httptest.NewRecorder()
@@ -71,14 +71,6 @@ func TestResponseIgnoresNonGetRequests(t *testing.T) {
 
 		if response.Code != http.StatusOK {
 			t.Errorf("Unexpected Status Code. Want: %v, got: %v", http.StatusOK, response.Code)
-		}
-
-		if body := string(response.Body.Bytes()); body != data {
-			t.Errorf("Expected body to be %v, got %v", data, body)
-		}
-
-		if header := response.Header().Get(ETagHeaderKey); header != "" {
-			t.Errorf("Expected empty etag header, got %v", header)
 		}
 	}
 }
