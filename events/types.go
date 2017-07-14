@@ -3,12 +3,6 @@ package events
 // ContextKey is the key that should be used for storing a client in the context
 var ContextKey = struct{}{}
 
-// Client can publish and subscribe to events
-type Client interface {
-	Publisher
-	Subscriber
-}
-
 // Publisher is a client that can publish events
 type Publisher interface {
 	// Publish publishes an event
@@ -17,7 +11,7 @@ type Publisher interface {
 
 // Subscriber is a client that can subscribe to events
 type Subscriber interface {
-	// Subscribe
+	// Subscribe creates a new subscription for receiving events with keys that match the given pattern
 	Subscribe(pattern string) (Subscription, error)
 }
 

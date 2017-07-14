@@ -14,32 +14,44 @@ const (
 	maxRetryDelay  float64 = 5000
 )
 
-func newSubscription(client *client, pattern string) (*subscription, error) {
-	s := &subscription{
-		client:  client,
-		pattern: pattern,
-		errors:  make(chan error),
+// NewSubscriber creates a new client that can subscribe to events
+func NewSubscriber(name, amqpURL string) Subscriber {
+	return &subscriber{name, amqpURL}
+}
+
+type subscriber struct {
+	name    string
+	amqpURL string
+}
+
+func (s *subscriber) Subscribe(pattern string) (Subscription, error) {
+	sub := &subscription{
+		subscriberName: s.name,
+		amqpURL:        s.amqpURL,
+		pattern:        pattern,
+		errors:         make(chan error),
 	}
 
-	ch, rcv, err := s.init()
+	ch, rcv, err := sub.init()
 	if err != nil {
 		return nil, err
 	}
 
 	go func() {
-		err := s.receiveLoop(ch, rcv)
+		err := sub.receiveLoop(ch, rcv)
 		if err != nil {
-			s.retryLoop()
+			sub.retryLoop()
 		}
 	}()
 
-	return s, nil
+	return sub, nil
 }
 
 type subscription struct {
-	client  *client
-	pattern string
-	errors  chan error
+	subscriberName string
+	amqpURL        string
+	pattern        string
+	errors         chan error
 
 	events     chan []byte
 	closer     chan struct{}
@@ -66,19 +78,18 @@ func (s *subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 	s.events = make(chan []byte)
 	s.closer = make(chan struct{})
 
-	randomID := "87fsadh"
-	queueName := "q-sub-" + s.pattern + randomID
+	queueName := fmt.Sprintf("q-sub-%v-%v", s.subscriberName, s.pattern)
 
 	const (
-		durable    = false
-		autoDelete = true
-		exclusive  = true
+		durable    = true
+		autoDelete = false
+		exclusive  = false
 		noWait     = false
 		autoAck    = true
 		noLocal    = false
 	)
 
-	ch, err := s.client.channel()
+	ch, err := newChannel(s.amqpURL)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error opening AMQP channel: %v", err)
 	}
@@ -91,7 +102,7 @@ func (s *subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		return nil, nil, fmt.Errorf("error binding subscription queue: %v", err)
 	}
 
-	rcv, err := ch.Consume(queueName, randomID, autoAck, exclusive, noLocal, noWait, nil)
+	rcv, err := ch.Consume(queueName, s.subscriberName, autoAck, exclusive, noLocal, noWait, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating consumer: %v", err)
 	}

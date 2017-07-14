@@ -21,9 +21,9 @@ const (
 	immediate  = false
 )
 
-// NewClient creates a new client for publishing and consuming events
-func NewClient(amqpURL string) (Client, error) {
-	c := &client{amqpURL: amqpURL}
+// NewPublisher creates a new client that can publish events
+func NewPublisher(amqpURL string) (Publisher, error) {
+	c := &publisher{amqpURL: amqpURL}
 	if err := c.bootstrap(); err != nil {
 		return nil, fmt.Errorf("error bootstrapping events: %v", err)
 	}
@@ -31,14 +31,14 @@ func NewClient(amqpURL string) (Client, error) {
 	return c, nil
 }
 
-type client struct {
+type publisher struct {
 	amqpURL      string
 	rlock, wlock sync.Mutex
 	connection   *amqp.Connection
 }
 
-func (c *client) Publish(key string, body interface{}) error {
-	ch, err := c.channel()
+func (c *publisher) Publish(key string, body interface{}) error {
+	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
 	}
@@ -56,12 +56,8 @@ func (c *client) Publish(key string, body interface{}) error {
 	return nil
 }
 
-func (c *client) Subscribe(pattern string) (Subscription, error) {
-	return newSubscription(c, pattern)
-}
-
-func (c *client) bootstrap() error {
-	ch, err := c.channel()
+func (c *publisher) bootstrap() error {
+	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
 	}
@@ -73,8 +69,8 @@ func (c *client) bootstrap() error {
 	return nil
 }
 
-func (c *client) channel() (*amqp.Channel, error) {
-	conn, err := rabbit.GetConnection(c.amqpURL)
+func newChannel(amqpURL string) (*amqp.Channel, error) {
+	conn, err := rabbit.GetConnection(amqpURL)
 	if err != nil {
 		return nil, err
 	}

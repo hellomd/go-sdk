@@ -9,13 +9,17 @@ import (
 )
 
 func TestPublishSubscribe(t *testing.T) {
-	client, err := NewClient(config.Get("AMQP_URL"))
+	amqpURL := config.Get("AMQP_URL")
+
+	publisher, err := NewPublisher(amqpURL)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	sub, err := client.Subscribe("questions.*.created")
+	subscriber := NewSubscriber("testsub", amqpURL)
+
+	sub, err := subscriber.Subscribe("questions.*.created")
 	if err != nil {
 		t.Error(err)
 		return
@@ -41,11 +45,11 @@ func TestPublishSubscribe(t *testing.T) {
 		}
 	}()
 
-	if err := client.Publish("questions.article.created", map[string]string{"foo": "bar"}); err != nil {
+	if err := publisher.Publish("questions.article.created", map[string]string{"foo": "bar"}); err != nil {
 		t.Error(err)
 	}
 
-	if err := client.Publish("questions.product.created", map[string]int{"one": 1}); err != nil {
+	if err := publisher.Publish("questions.product.created", map[string]int{"one": 1}); err != nil {
 		t.Error(err)
 	}
 
