@@ -36,10 +36,8 @@ func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 		erw.Header().Set(ETagHeaderKey, etag)
 	}
 
-	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
-		if erw.req.Method == http.MethodGet {
-			erw.code = http.StatusNotModified
-		}
+	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag && erw.req.Method == http.MethodGet {
+		erw.code = http.StatusNotModified
 		erw.writeHeader()
 		return erw.writeBody(nil)
 	}
