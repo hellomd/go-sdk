@@ -22,6 +22,9 @@ const (
 )
 
 // NewPublisher creates a new client that can publish events
+//
+// This publisher is concurrent safe and should be reused as much as possible
+// because of its initialization logic that involves declaring the RabbitMQ exchange.
 func NewPublisher(amqpURL string) (Publisher, error) {
 	c := &publisher{amqpURL: amqpURL}
 	if err := c.bootstrap(); err != nil {

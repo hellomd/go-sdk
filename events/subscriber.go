@@ -15,6 +15,9 @@ const (
 )
 
 // NewSubscriber creates a new client that can subscribe to events
+//
+// This subscriber is concurrent safe and has no initialization logic.
+// Feel free to use whatever lifecycle you think is best for it.
 func NewSubscriber(name, amqpURL string) Subscriber {
 	return &subscriber{name, amqpURL}
 }
