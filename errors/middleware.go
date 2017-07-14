@@ -5,6 +5,8 @@ import (
 
 	"bytes"
 
+	"encoding/json"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +18,7 @@ type errorReponseWriter struct {
 }
 
 func (erw *errorReponseWriter) Write(data []byte) (int, error) {
-	if erw.status == 0 || erw.status >= 500 {
+	if erw.status == 0 || erw.status >= 400 {
 		return erw.body.Write(data)
 	}
 	return erw.ResponseWriter.Write(data)
@@ -49,11 +51,17 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
 		entry.Warn(eWriter.body.String())
+		if eWriter.status == http.StatusNotFound {
+			ErrNotFound.Description = eWriter.body.String()
+			json.NewEncoder(eWriter.ResponseWriter).Encode(ErrNotFound)
+			return
+		}
+		eWriter.ResponseWriter.Write(eWriter.body.Bytes())
 	}
 
 	if eWriter.status >= http.StatusInternalServerError {
 		entry.Error(eWriter.body.String())
-		eWriter.ResponseWriter.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		json.NewEncoder(eWriter.ResponseWriter).Encode(ErrUnexptectedError)
 	}
 
 }

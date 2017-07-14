@@ -13,7 +13,7 @@ import (
 
 	"encoding/json"
 
-	"fmt"
+	"reflect"
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
@@ -34,8 +34,14 @@ func TestError500(t *testing.T) {
 
 	srv.ServeHTTP(response, httptest.NewRequest("GET", "/", nil))
 
-	if response.Body.String() != http.StatusText(http.StatusInternalServerError) {
-		t.Errorf(`Unexpcted body, got :"%v" `, response.Body.String())
+	resp := &JSONError{}
+	err := json.NewDecoder(response.Body).Decode(resp)
+	if err != nil {
+		t.Errorf(`Unexpcted error on parse json, got :"%v" `, err.Error())
+	}
+
+	if !reflect.DeepEqual(resp, ErrUnexptectedError) {
+		t.Errorf(`Unexpcted error response. Got :"%v", want: %v `, resp, ErrUnexptectedError)
 	}
 
 	if !strings.Contains(errBuffer.String(), "chaos") {
@@ -44,7 +50,7 @@ func TestError500(t *testing.T) {
 
 }
 
-func TestError400(t *testing.T) {
+func TestError422(t *testing.T) {
 	errBuffer := &bytes.Buffer{}
 	logger := logrus.New()
 	logger.Out = errBuffer
@@ -60,12 +66,33 @@ func TestError400(t *testing.T) {
 
 	srv.ServeHTTP(response, httptest.NewRequest("GET", "/", nil))
 
-	resp := []inError{}
+	resp := JSONError{}
 	err := json.Unmarshal(response.Body.Bytes(), &resp)
 	if err != nil {
 		t.Errorf(`Unexpcted error on parse json, got :"%v" `, err.Error())
 	}
 
-	fmt.Println(resp ) 
+}
+
+func TestError404(t *testing.T) {
+	errBuffer := &bytes.Buffer{}
+	logger := logrus.New()
+	logger.Out = errBuffer
+
+	srv := negroni.New(NewMiddleware(logger))
+
+	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		http.Error(w, "User 420 not found", http.StatusNotFound)
+	})
+
+	response := httptest.NewRecorder()
+
+	srv.ServeHTTP(response, httptest.NewRequest("GET", "/", nil))
+
+	resp := JSONError{}
+	err := json.Unmarshal(response.Body.Bytes(), &resp)
+	if err != nil {
+		t.Errorf(`Unexpcted error on parse json, got :"%v" `, err.Error())
+	}
 
 }

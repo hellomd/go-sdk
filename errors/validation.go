@@ -8,8 +8,11 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-// ErrInvalidFields -
-var ErrInvalidFields = &validationError{}
+const (
+	validationErrorCode = "invalid_entity"
+	validationErrorMsg  = "Entity Validation Failed"
+)
+
 var validate = ValidateMD{validator.New()}
 
 func init() {
@@ -48,7 +51,7 @@ type validationError struct {
 	errors []validator.FieldError
 }
 
-type inError struct {
+type validationJSONError struct {
 	Code    string `json:"code"`
 	Field   string `json:"field"`
 	Message string `json:"message"`
@@ -56,14 +59,17 @@ type inError struct {
 
 func (v *validationError) Error() string {
 
-	a := []inError{}
+	a := []validationJSONError{}
 
 	for _, fe := range v.errors {
-
-		a = append(a, inError{fe.Tag(), fe.Field(), fe.Field() + " is " + fe.Tag()})
+		a = append(a, validationJSONError{fe.Tag(), fe.Field(), fe.Field() + " is " + fe.Tag()})
 	}
 
-	b, _ := json.Marshal(a)
+	b, _ := json.Marshal(JSONError{
+		Code:    validationErrorCode,
+		Message: validationErrorMsg,
+		Erros:   a,
+	})
 	return string(b)
 
 }
