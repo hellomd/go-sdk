@@ -100,3 +100,22 @@ func TestPanicsOnSecondWrite(t *testing.T) {
 		t.Errorf("Expected double write to panic with error %v, got: %v", errDoubleWrite, thrownError)
 	}
 }
+
+func TestDoesNotSetEtagWhenStatusCodeGt300(t *testing.T) {
+	srv := negroni.New(NewMiddleware())
+	response := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(data))
+		next(w, r)
+	})
+
+	srv.ServeHTTP(response, req)
+
+	if etagHeader := response.Header().Get(ETagHeaderKey); etagHeader != "" {
+		t.Errorf("Expected empty etag header, got: %v", etagHeader)
+	}
+}

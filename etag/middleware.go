@@ -32,7 +32,9 @@ type etagResponseWriter struct {
 
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
 	etag := calculateEtag(b)
-	erw.Header().Set(ETagHeaderKey, etag)
+	if erw.code < http.StatusMultipleChoices {
+		erw.Header().Set(ETagHeaderKey, etag)
+	}
 
 	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
 		if erw.req.Method == http.MethodGet {
