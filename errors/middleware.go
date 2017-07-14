@@ -47,7 +47,11 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 
 	entry := logrus.NewEntry(mw.logger)
 
-	if eWriter.status == http.StatusInternalServerError {
+	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
+		entry.Warn(eWriter.body.String())
+	}
+
+	if eWriter.status >= http.StatusInternalServerError {
 		entry.Error(eWriter.body.String())
 		eWriter.ResponseWriter.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 	}
