@@ -2,6 +2,7 @@ package etag
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -14,29 +15,49 @@ const (
 	IfNoneMatchHeaderKey = "If-None-Match"
 )
 
+var (
+	errDoubleWrite = errors.New("Write called twice with ETag Middleware")
+)
+
 type etagResponseWriter struct {
 	http.ResponseWriter
 	req         *http.Request
 	code        int
 	wroteHeader bool
+	wroteBody   bool
 }
 
 func (erw *etagResponseWriter) Write(b []byte) (int, error) {
-	etag := etag(b)
+	etag := calculateEtag(b)
 	erw.Header().Set(ETagHeaderKey, etag)
+
 	if erw.req.Header.Get(IfNoneMatchHeaderKey) == etag {
-		erw.ResponseWriter.WriteHeader(http.StatusNotModified)
-		return erw.ResponseWriter.Write(nil)
+		erw.code = http.StatusNotModified
+		erw.writeHeader()
+		return erw.writeBody(nil)
 	}
-	if erw.wroteHeader == false {
+
+	erw.writeHeader()
+	return erw.writeBody(b)
+}
+
+func calculateEtag(data []byte) string {
+	return fmt.Sprintf("%x", md5.Sum(data))
+}
+
+func (erw *etagResponseWriter) writeBody(data []byte) (int, error) {
+	if erw.wroteBody {
+		panic(errDoubleWrite)
+	}
+	erw.wroteBody = true
+	return erw.ResponseWriter.Write(data)
+}
+
+func (erw *etagResponseWriter) writeHeader() {
+	if !erw.wroteHeader {
 		erw.wroteHeader = true
 		erw.ResponseWriter.WriteHeader(erw.code)
 	}
-	return erw.ResponseWriter.Write(b)
-}
-
-func etag(data []byte) string {
-	return fmt.Sprintf("%x", md5.Sum(data))
 }
 
 func (erw *etagResponseWriter) WriteHeader(code int) {
@@ -56,9 +77,13 @@ func NewMiddleware() Middleware {
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	writer := &etagResponseWriter{w, r, http.StatusOK, false}
-	next(writer, r)
-	if !writer.wroteHeader {
-		writer.ResponseWriter.WriteHeader(writer.code)
+	if r.Method == http.MethodGet {
+		writer := &etagResponseWriter{w, r, http.StatusOK, false, false}
+		next(writer, r)
+		if !writer.wroteHeader {
+			writer.ResponseWriter.WriteHeader(writer.code)
+		}
+	} else {
+		next(w, r)
 	}
 }
