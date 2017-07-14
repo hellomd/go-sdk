@@ -8,6 +8,8 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"strings"
+
 	"github.com/DATA-DOG/godog/gherkin"
 )
 
@@ -133,7 +135,7 @@ func FillStruct(s interface{}, m map[string]string) error {
 			continue
 
 		case reflect.TypeOf([]string{}):
-			structFieldValue.Set(reflect.ValueOf([]string{value}))
+			structFieldValue.Set(reflect.ValueOf(strings.Split(value, ",")))
 			continue
 
 		default:
