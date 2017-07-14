@@ -80,9 +80,7 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 	if r.Method == http.MethodGet {
 		writer := &etagResponseWriter{w, r, http.StatusOK, false, false}
 		next(writer, r)
-		if !writer.wroteHeader {
-			writer.ResponseWriter.WriteHeader(writer.code)
-		}
+		writer.writeHeader()
 	} else {
 		next(w, r)
 	}
