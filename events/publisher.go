@@ -9,10 +9,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const (
-	// ExchangeName is the exchange to which events are published
-	ExchangeName = "x-events"
+// ExchangeName is the exchange to which events are published
+const ExchangeName = "x-events"
 
+const (
 	durable    = true
 	autoDelete = false
 	internal   = false
@@ -25,8 +25,8 @@ const (
 //
 // This publisher is concurrent safe and should be reused as much as possible
 // because of its initialization logic that involves declaring the RabbitMQ exchange.
-func NewPublisher(amqpURL string) (Publisher, error) {
-	c := &publisher{amqpURL: amqpURL}
+func NewPublisher(amqpURL string) (*Publisher, error) {
+	c := &Publisher{amqpURL: amqpURL}
 	if err := c.bootstrap(); err != nil {
 		return nil, fmt.Errorf("error bootstrapping events: %v", err)
 	}
@@ -34,13 +34,14 @@ func NewPublisher(amqpURL string) (Publisher, error) {
 	return c, nil
 }
 
-type publisher struct {
+// Publisher is a client that can publish events
+type Publisher struct {
 	amqpURL      string
 	rlock, wlock sync.Mutex
-	connection   *amqp.Connection
 }
 
-func (c *publisher) Publish(key string, body interface{}) error {
+// Publish publishes an event
+func (c *Publisher) Publish(key string, body interface{}) error {
 	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
@@ -59,7 +60,7 @@ func (c *publisher) Publish(key string, body interface{}) error {
 	return nil
 }
 
-func (c *publisher) bootstrap() error {
+func (c *Publisher) bootstrap() error {
 	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
