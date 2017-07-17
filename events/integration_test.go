@@ -30,8 +30,8 @@ func TestPublishSubscribe(t *testing.T) {
 
 	messages := [][]byte{}
 	wg := new(sync.WaitGroup)
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		timeout := time.After(1 * time.Second)
 

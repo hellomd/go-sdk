@@ -36,6 +36,9 @@ func dial(url string) (*amqp.Connection, error) {
 
 	go func() {
 		<-c.NotifyClose(make(chan *amqp.Error))
+		rlock.Lock()
+		defer rlock.Unlock()
+
 		wlock.Lock()
 		defer wlock.Unlock()
 
