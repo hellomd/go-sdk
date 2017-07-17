@@ -1,13 +1,33 @@
 package events
 
 import (
+	"fmt"
+	"os"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/hellomd/go-sdk/config"
 	"github.com/hellomd/go-sdk/rabbit"
+	"github.com/streadway/amqp"
 )
+
+func TestMain(m *testing.M) {
+	timeout := time.Now().Add(5 * time.Second)
+	for {
+		conn, err := amqp.Dial(config.Get("AMQP_URL"))
+		if err != nil && time.Now().After(timeout) {
+			fmt.Println("Failed to get AMQP connection:", err)
+			os.Exit(1)
+		} else if err != nil {
+			continue
+		}
+
+		conn.Close()
+		break
+	}
+	os.Exit(m.Run())
+}
 
 func TestPublishSubscribe(t *testing.T) {
 	amqpURL := config.Get("AMQP_URL")
