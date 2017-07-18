@@ -81,6 +81,12 @@
 			"revisionTime": "2017-06-08T22:14:41Z"
 		},
 		{
+			"checksumSHA1": "3XsmaR3i5euGHpt150DerScyOco=",
+			"path": "github.com/streadway/amqp",
+			"revision": "2cbfe40c9341ad63ba23e53013b3ddc7989d801c",
+			"revisionTime": "2017-07-07T20:29:55Z"
+		},
+		{
 			"checksumSHA1": "DB7eoipX6KBANF3D9bAtvWLq+i8=",
 			"path": "github.com/urfave/negroni",
 			"revision": "3019daf414cfd2c51de68c3a535707c0de6e3d83",
