@@ -38,7 +38,7 @@ func ExampleSubscriber() {
 		select {
 		case evt := <-sub.Receive():
 			q := question{}
-			if err := json.Unmarshal(evt, &q); err != nil {
+			if err := json.Unmarshal(evt.Body, &q); err != nil {
 				fmt.Println("Error deserializing event:", err)
 				continue
 			}

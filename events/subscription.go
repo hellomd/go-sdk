@@ -8,6 +8,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Event is what is received by a subscription
+type Event struct {
+	Key  string
+	Body []byte
+}
+
 // Subscription can receive events to which it subscribes
 type Subscription struct {
 	subscriberName string
@@ -15,13 +21,13 @@ type Subscription struct {
 	pattern        string
 	errors         chan error
 
-	events     chan []byte
+	events     chan Event
 	closer     chan struct{}
 	retryCount float64
 }
 
 // Receive returns a channel to which subscription events are passed
-func (s *Subscription) Receive() <-chan []byte {
+func (s *Subscription) Receive() <-chan Event {
 	return s.events
 }
 
@@ -41,7 +47,7 @@ func (s *Subscription) Errors() <-chan error {
 }
 
 func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
-	s.events = make(chan []byte)
+	s.events = make(chan Event)
 	s.closer = make(chan struct{})
 
 	queueName := fmt.Sprintf("q-sub-%v-%v", s.subscriberName, s.pattern)
@@ -85,7 +91,10 @@ func (s *Subscription) receiveLoop(ch *amqp.Channel, rcv <-chan amqp.Delivery) e
 			return err
 		case delivery := <-rcv: // send event
 			if delivery.Acknowledger != nil { // safeguard against closed channel sends
-				s.events <- delivery.Body
+				s.events <- Event{
+					Key:  delivery.RoutingKey,
+					Body: delivery.Body,
+				}
 			}
 		case <-s.closer: // stop receiving
 			ch.Close()

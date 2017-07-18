@@ -48,7 +48,7 @@ func TestPublishSubscribe(t *testing.T) {
 
 	defer sub.Close()
 
-	messages := [][]byte{}
+	messages := []Event{}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go func() {
@@ -81,12 +81,12 @@ func TestPublishSubscribe(t *testing.T) {
 		return
 	}
 
-	if string(messages[0]) != `{"foo":"bar"}` {
-		t.Errorf("expected first message to be %v, but was %v", `{"foo":"bar"}`, string(messages[0]))
+	if string(messages[0].Body) != `{"foo":"bar"}` {
+		t.Errorf("expected first message to be %v, but was %v", `{"foo":"bar"}`, string(messages[0].Body))
 	}
 
-	if string(messages[1]) != `{"one":1}` {
-		t.Errorf("expected first message to be %v, but was %v", `{"one":1}`, string(messages[1]))
+	if string(messages[1].Body) != `{"one":1}` {
+		t.Errorf("expected first message to be %v, but was %v", `{"one":1}`, string(messages[1].Body))
 	}
 }
 
@@ -114,13 +114,13 @@ func TestReconnection(t *testing.T) {
 		t.Error(err)
 	}
 
-	var evt []byte
+	var evt Event
 
 	// get first event
 	select {
 	case evt = <-sub.Receive():
-		if string(evt) != `"one"` {
-			t.Errorf(`expected "one", but got %v`, string(evt))
+		if string(evt.Body) != `"one"` {
+			t.Errorf(`expected "one", but got %v`, string(evt.Body))
 			return
 		}
 	case <-time.After(50 * time.Millisecond):
@@ -152,8 +152,8 @@ func TestReconnection(t *testing.T) {
 	// get new event
 	select {
 	case evt = <-sub.Receive():
-		if string(evt) != `"two"` {
-			t.Errorf(`expected "two", but got %v`, string(evt))
+		if string(evt.Body) != `"two"` {
+			t.Errorf(`expected "two", but got %v`, string(evt.Body))
 			return
 		}
 	case <-time.After(50 * time.Millisecond):
