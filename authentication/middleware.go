@@ -10,9 +10,7 @@ import (
 
 const headerKey = "Authorization"
 
-var (
-	errInvalidHeader = errors.New("invalid authorization header")
-)
+var errInvalidHeader = errors.New("invalid authorization header")
 
 // NewMiddleware -
 func NewMiddleware(secret []byte) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

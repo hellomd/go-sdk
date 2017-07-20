@@ -5,17 +5,15 @@ import (
 	"errors"
 )
 
-type ctxKey int
+type ctxKeyType int
 
-// CtxKey -
-const CtxKey ctxKey = 0
+const ctxKey ctxKeyType = 0
 
-// errUserInCtx -
 var errNoUserInCtx = errors.New("no user in context")
 
 // GetUserFromCtx -
 func GetUserFromCtx(ctx context.Context) *User {
-	u, ok := ctx.Value(CtxKey).(*User)
+	u, ok := ctx.Value(ctxKey).(*User)
 	if !ok {
 		panic(errNoUserInCtx)
 	}
@@ -24,5 +22,5 @@ func GetUserFromCtx(ctx context.Context) *User {
 
 // SetUserInCtx -
 func SetUserInCtx(ctx context.Context, user *User) context.Context {
-	return context.WithValue(ctx, CtxKey, user)
+	return context.WithValue(ctx, ctxKey, user)
 }
