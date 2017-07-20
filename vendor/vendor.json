@@ -27,6 +27,12 @@
 			"revisionTime": "2017-04-17T19:39:30Z"
 		},
 		{
+			"checksumSHA1": "GXOurDGgsLmJs0wounpdWZZRSGw=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "a539ee1a749a2b895533f979515ac7e6e0f5b650",
+			"revisionTime": "2017-06-08T00:51:49Z"
+		},
+		{
 			"checksumSHA1": "I8Ybx9m7RMmJpqXp3658gk42rBg=",
 			"path": "github.com/getsentry/raven-go",
 			"revision": "b9f2aa2550bb0e89ab351d6fd59decd608b84ac1",
