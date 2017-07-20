@@ -10,19 +10,19 @@ type ctxKey int
 // CtxKey -
 const CtxKey ctxKey = 0
 
-// ErrNoCurrentUserInCtx -
-var ErrNoCurrentUserInCtx = errors.New("no current user in context")
+// errUserInCtx -
+var errNoUserInCtx = errors.New("no user in context")
 
-// GetCurrentUserFromCtx -
-func GetCurrentUserFromCtx(ctx context.Context) *CurrentUser {
-	cu, ok := ctx.Value(CtxKey).(*CurrentUser)
+// GetUserFromCtx -
+func GetUserFromCtx(ctx context.Context) *User {
+	u, ok := ctx.Value(CtxKey).(*User)
 	if !ok {
-		panic(ErrNoCurrentUserInCtx)
+		panic(errNoUserInCtx)
 	}
-	return cu
+	return u
 }
 
-// SetCurrentUserOnCtx -
-func SetCurrentUserOnCtx(ctx context.Context, user *CurrentUser) context.Context {
+// SetUserInCtx -
+func SetUserInCtx(ctx context.Context, user *User) context.Context {
 	return context.WithValue(ctx, CtxKey, user)
 }

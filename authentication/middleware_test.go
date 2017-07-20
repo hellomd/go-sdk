@@ -14,7 +14,7 @@ var secret = []byte("123456")
 
 func newToken(userID string) string {
 	claims := Claims{
-		&CurrentUser{ID: userID},
+		&User{ID: userID},
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(10 * time.Hour).Unix(),
 		},
@@ -27,14 +27,15 @@ func newToken(userID string) string {
 }
 
 func TestNoToken(t *testing.T) {
-	srv := negroni.New(NewMiddleware(secret))
+	srv := negroni.New()
+	srv.UseFunc(NewMiddleware(secret))
 	response := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 
 	srv.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		currentUser := GetCurrentUserFromCtx(r.Context())
-		if !currentUser.Empty() {
-			t.Errorf("current user should be empty")
+		user := GetUserFromCtx(r.Context())
+		if !user.Empty() {
+			t.Errorf("user should be empty")
 		}
 	}))
 
@@ -42,7 +43,8 @@ func TestNoToken(t *testing.T) {
 }
 
 func TestBadAuthorization(t *testing.T) {
-	srv := negroni.New(NewMiddleware(secret))
+	srv := negroni.New()
+	srv.UseFunc(NewMiddleware(secret))
 
 	badHeaders := []string{
 		"something else",
@@ -66,14 +68,15 @@ func TestBadAuthorization(t *testing.T) {
 
 func TestGoodToken(t *testing.T) {
 	userID := "4d88e15b60f486e428412dc7"
-	srv := negroni.New(NewMiddleware(secret))
+	srv := negroni.New()
+	srv.UseFunc(NewMiddleware(secret))
 	srv.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		currentUser := GetCurrentUserFromCtx(r.Context())
-		if currentUser.Empty() {
-			t.Errorf("current user should not be empty")
+		user := GetUserFromCtx(r.Context())
+		if user.Empty() {
+			t.Errorf("user should not be empty")
 		}
-		if currentUser.ID != userID {
-			t.Errorf("expected current user id %v, got %v", userID, currentUser.ID)
+		if user.ID != userID {
+			t.Errorf("expected user id %v, got %v", userID, user.ID)
 		}
 	}))
 
