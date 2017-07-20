@@ -51,18 +51,18 @@ type validationError struct {
 	errors []validator.FieldError
 }
 
-type validationJSONError struct {
+type ValidationJSONError struct {
 	Code    string `json:"code"`
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
 
-func (v *validationError) Error() string {
+func (v *ValidationError) Error() string {
 
-	a := []validationJSONError{}
+	a := []ValidationJSONError{}
 
 	for _, fe := range v.errors {
-		a = append(a, validationJSONError{fe.Tag(), fe.Field(), fe.Field() + " is " + fe.Tag()})
+		a = append(a, ValidationJSONError{fe.Tag(), fe.Field(), fe.Field() + " is " + fe.Tag()})
 	}
 
 	b, _ := json.Marshal(JSONError{

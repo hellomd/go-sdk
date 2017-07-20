@@ -8,7 +8,7 @@ type JSONError struct {
 	Code        string                `json:"code"`
 	Message     string                `json:"message"`
 	Description string                `json:"description,omitempty"`
-	Erros       []validationJSONError `json:"errors,omitempty"`
+	Erros       []ValidationJSONError `json:"errors,omitempty"`
 }
 
 func (jError *JSONError) Error() string {
