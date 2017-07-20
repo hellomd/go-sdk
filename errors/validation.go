@@ -57,7 +57,7 @@ type ValidationJSONError struct {
 	Message string `json:"message"`
 }
 
-func (v *ValidationError) Error() string {
+func (v *validationError) Error() string {
 
 	a := []ValidationJSONError{}
 

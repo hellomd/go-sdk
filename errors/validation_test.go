@@ -21,7 +21,7 @@ func TestValidator(t *testing.T) {
 	expctedError := JSONError{
 		Code:    validationErrorCode,
 		Message: validationErrorMsg,
-		Erros: []validationJSONError{validationJSONError{
+		Erros: []ValidationJSONError{ValidationJSONError{
 			"required",
 			"last_name",
 			"last_name is required",
