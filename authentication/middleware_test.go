@@ -1,7 +1,7 @@
 package authentication
 
 import (
-	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -26,13 +26,63 @@ func newToken(userID string) string {
 	return token
 }
 
-func TestSomething(t *testing.T) {
+func TestNoToken(t *testing.T) {
 	srv := negroni.New(NewMiddleware(secret))
 	response := httptest.NewRecorder()
-	fmt.Println(newToken("123"))
-
 	req := httptest.NewRequest("GET", "/", nil)
-	req.Header.Add(headerKey, "bearer "+newToken("123"))
+
+	srv.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		currentUser := GetCurrentUserFromCtx(r.Context())
+		if !currentUser.Empty() {
+			t.Errorf("current user should be empty")
+		}
+	}))
 
 	srv.ServeHTTP(response, req)
+}
+
+func TestBadAuthorization(t *testing.T) {
+	srv := negroni.New(NewMiddleware(secret))
+
+	badHeaders := []string{
+		"something else",
+		"something",
+		"bearer ",
+		"bearer abc",
+		"bearer abc def",
+	}
+
+	for _, header := range badHeaders {
+		response := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/", nil)
+		req.Header.Add(headerKey, header)
+		srv.ServeHTTP(response, req)
+
+		if response.Code != http.StatusUnauthorized {
+			t.Errorf("expected status code to be %v, got %v for header %v", http.StatusUnauthorized, response.Code, header)
+		}
+	}
+}
+
+func TestGoodToken(t *testing.T) {
+	userID := "4d88e15b60f486e428412dc7"
+	srv := negroni.New(NewMiddleware(secret))
+	srv.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		currentUser := GetCurrentUserFromCtx(r.Context())
+		if currentUser.Empty() {
+			t.Errorf("current user should not be empty")
+		}
+		if currentUser.ID != userID {
+			t.Errorf("expected current user id %v, got %v", userID, currentUser.ID)
+		}
+	}))
+
+	response := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	req.Header.Add(headerKey, "bearer "+newToken(userID))
+	srv.ServeHTTP(response, req)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("expected status code to be %v, got %v", http.StatusOK, response.Code)
+	}
 }

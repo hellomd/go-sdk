@@ -14,12 +14,12 @@ const CtxKey ctxKey = 0
 var ErrNoCurrentUserInCtx = errors.New("no current user in context")
 
 // GetCurrentUserFromCtx -
-func GetCurrentUserFromCtx(ctx context.Context) (*CurrentUser, error) {
-	db, ok := ctx.Value(CtxKey).(*CurrentUser)
+func GetCurrentUserFromCtx(ctx context.Context) *CurrentUser {
+	cu, ok := ctx.Value(CtxKey).(*CurrentUser)
 	if !ok {
-		return nil, ErrNoCurrentUserInCtx
+		panic(ErrNoCurrentUserInCtx)
 	}
-	return db, nil
+	return cu
 }
 
 // SetCurrentUserOnCtx -

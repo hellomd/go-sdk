@@ -6,3 +6,8 @@ type CurrentUser struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
+
+// Empty -
+func (cu *CurrentUser) Empty() bool {
+	return cu.ID == ""
+}
