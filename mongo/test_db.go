@@ -17,7 +17,7 @@ type TestDB struct {
 func NewTestDB() *TestDB {
 	if testSession == nil {
 		var err error
-		testSession, err = mgo.Dial(config.Get(MongoCfgKey))
+		testSession, err = mgo.Dial(config.Get(URLCfgKey))
 		if err != nil {
 			panic(err)
 		}
