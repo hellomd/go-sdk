@@ -5,28 +5,24 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hellomd/go-sdk/config"
 	"github.com/urfave/negroni"
 )
 
-func TestMiddleware(t *testing.T) {
-	dbName := "test"
-	mw := NewMiddleware(config.Get(URLCfgKey), dbName).(*middleware)
+func TestTestMiddleware(t *testing.T) {
+	db := NewTestDB()
+	mw := NewTestMiddleware(db.DB)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 
 	a := negroni.New()
-	a.Use(mw)
+	a.UseFunc(mw)
 	a.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		v, err := GetFromCtx(r.Context())
 		if err == errNotInCtx {
 			t.Error("Expected database on context")
 		}
-		if v.Name != dbName {
-			t.Errorf("Expected %s database name, got: %s", dbName, v.Name)
-		}
-		if v.Session == mw.session {
-			t.Errorf("Expected session to be different from stored session")
+		if v.Name != db.DBName {
+			t.Errorf("Expected %s database name, got: %s", db.DBName, v.Name)
 		}
 		next(w, r)
 	}))

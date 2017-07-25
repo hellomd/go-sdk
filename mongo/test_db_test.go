@@ -11,6 +11,10 @@ func TestTestDB(t *testing.T) {
 		t.Error("Expected DB not to be nil")
 	}
 
+	if testDB.DBName == "" {
+		t.Error("Expected DBName not to be empty")
+	}
+
 	// Make sure session is still open
 	testDB.DB.Session.Copy()
 

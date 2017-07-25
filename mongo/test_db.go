@@ -10,7 +10,8 @@ var testSession *mgo.Session
 
 // TestDB -
 type TestDB struct {
-	DB *mgo.Database
+	DB     *mgo.Database
+	DBName string
 }
 
 // NewTestDB -
@@ -23,8 +24,11 @@ func NewTestDB() *TestDB {
 		}
 	}
 
+	dbName := random.String(10)
+
 	return &TestDB{
-		testSession.Copy().DB(random.String(10)),
+		DB:     testSession.Copy().DB(dbName),
+		DBName: dbName,
 	}
 }
 
