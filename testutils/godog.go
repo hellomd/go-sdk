@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +13,12 @@ import (
 	"github.com/DATA-DOG/godog/gherkin"
 	"gopkg.in/mgo.v2/bson"
 )
+
+var supportedLayouts = []string{
+	time.RFC822,
+	time.RFC3339,
+	time.RFC3339Nano,
+}
 
 // TestMain -
 func TestMain(m *testing.M, FeatureContext func(suite *godog.Suite)) {
@@ -67,9 +74,19 @@ func FillStruct(s interface{}, m map[string]string) error {
 			continue
 
 		case reflect.TypeOf(time.Time{}):
-			fieldTime, err := time.Parse(time.RFC3339Nano, value)
+			var fieldTime time.Time
+			var err error
+			for _, layout := range supportedLayouts {
+				fieldTime, err = time.Parse(layout, value)
+				if err != nil {
+					continue
+				}
+
+				break
+			}
+
 			if err != nil {
-				return fmt.Errorf("Cannot set %s as a date", name)
+				return fmt.Errorf("cannot set %v as a date", name)
 			}
 
 			structFieldValue.Set(reflect.ValueOf(fieldTime))
@@ -77,6 +94,15 @@ func FillStruct(s interface{}, m map[string]string) error {
 
 		case reflect.TypeOf([]string{}):
 			structFieldValue.Set(reflect.ValueOf(strings.Split(value, ",")))
+			continue
+
+		case reflect.TypeOf(0):
+			fieldInt, err := strconv.Atoi(value)
+			if err != nil {
+				return err
+			}
+
+			structFieldValue.Set(reflect.ValueOf(fieldInt))
 			continue
 
 		default:
