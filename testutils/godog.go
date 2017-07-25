@@ -48,3 +48,22 @@ func ParseTable(table *gherkin.DataTable) []map[string]string {
 
 	return values
 }
+
+// ParseTableProjected receives a Gherkin table and returns a map
+// where the first column being key and second the value
+func ParseTableProjected(table *gherkin.DataTable) map[string]string {
+	result := map[string]string{}
+	if len(table.Rows) == 0 {
+		return result
+	}
+
+	if len(table.Rows[0].Cells) < 2 {
+		panic("expected table with at least two columns")
+	}
+
+	for _, r := range table.Rows {
+		result[r.Cells[0].Value] = r.Cells[1].Value
+	}
+
+	return result
+}
