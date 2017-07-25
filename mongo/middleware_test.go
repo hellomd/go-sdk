@@ -1,7 +1,6 @@
 package mongo
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,20 +34,4 @@ func TestMiddleware(t *testing.T) {
 	}))
 
 	a.ServeHTTP(response, req)
-
-}
-
-func TestGetMongoFromContext(t *testing.T) {
-	ctx := context.Background()
-	_, err := GetFromCtx(ctx)
-	if err != errNotInCtx {
-		t.Error("Expected ErrNoMongoInCtx, got: ", err)
-	}
-
-	expectedDB := &mgo.Database{}
-	ctx = context.WithValue(ctx, ctxKey{}, expectedDB)
-	db, _ := GetFromCtx(ctx)
-	if db != expectedDB {
-		t.Errorf("Expected %v, got: %v", expectedDB, db)
-	}
 }
