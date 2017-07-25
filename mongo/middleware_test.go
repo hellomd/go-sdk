@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
+	"github.com/hellomd/go-sdk/config"
 	"github.com/urfave/negroni"
 
 	"gopkg.in/mgo.v2"
@@ -14,14 +14,14 @@ import (
 
 func TestMiddleware(t *testing.T) {
 	dbName := "test"
-	mw := NewMiddleware(os.Getenv("MONGO_URL"), dbName).(*middleware)
+	mw := NewMiddleware(config.Get(URLCfgKey), dbName).(*middleware)
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 
 	a := negroni.New()
 	a.Use(mw)
 	a.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		v, ok := r.Context().Value(MongoCtxKey).(*mgo.Database)
+		v, ok := r.Context().Value(ctxKey{}).(*mgo.Database)
 		if !ok {
 			t.Error("Expected database on context")
 		}
@@ -40,14 +40,14 @@ func TestMiddleware(t *testing.T) {
 
 func TestGetMongoFromContext(t *testing.T) {
 	ctx := context.Background()
-	_, err := GetMongoFromCtx(ctx)
-	if err != ErrNoMongoInCtx {
+	_, err := GetFromCtx(ctx)
+	if err != errNotInCtx {
 		t.Error("Expected ErrNoMongoInCtx, got: ", err)
 	}
 
 	expectedDB := &mgo.Database{}
-	ctx = context.WithValue(ctx, MongoCtxKey, expectedDB)
-	db, _ := GetMongoFromCtx(ctx)
+	ctx = context.WithValue(ctx, ctxKey{}, expectedDB)
+	db, _ := GetFromCtx(ctx)
 	if db != expectedDB {
 		t.Errorf("Expected %v, got: %v", expectedDB, db)
 	}
