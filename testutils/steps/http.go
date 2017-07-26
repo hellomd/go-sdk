@@ -109,15 +109,19 @@ func TheJSONResponseShouldBe(response *http.Response, expectedJSON *gherkin.DocS
 		return fmt.Errorf("Expected a recorded response")
 	}
 
-	var expectedObj interface{}
+	var expectedObj map[string]interface{}
 	if err := json.Unmarshal([]byte(expectedJSON.Content), &expectedObj); err != nil {
 		return err
 	}
 
-	var actualObj interface{}
+	var actualObj map[string]interface{}
 
 	if err := json.NewDecoder(response.Body).Decode(&actualObj); err != nil {
 		return err
+	}
+
+	if expectedObj["id"] == "$id" {
+		expectedObj["id"] = actualObj["id"]
 	}
 
 	if !testutils.JSONEqualsIgnoreOrder(actualObj, expectedObj) {
