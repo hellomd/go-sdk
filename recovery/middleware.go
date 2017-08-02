@@ -1,44 +1,28 @@
 package recovery
 
 import (
-	"net/http"
-
 	"fmt"
+	"net/http"
 
 	raven "github.com/getsentry/raven-go"
 	"github.com/sirupsen/logrus"
 )
 
-// Middleware -
-type Middleware interface {
-	ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
-}
-
-// RavenClient -
-type RavenClient interface {
-	CaptureError(error, map[string]string, ...raven.Interface) string
-	SetHttpContext(*raven.Http)
-}
-
-type middleware struct {
-	RavenClient
-	*logrus.Logger
-}
-
-// NewMiddleware -
-func NewMiddleware(ravenClient RavenClient, logger *logrus.Logger) Middleware {
-	return &middleware{ravenClient, logger}
-}
-
-func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	defer func() {
-		if err := recover(); err != nil {
-			mw.SetHttpContext(raven.NewHttp(r))
-			mw.CaptureError(fmt.Errorf("%v", err), nil)
-			mw.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
+// NewMiddleware returns a middleware that recovers from errors and adds a error reporter to context
+func NewMiddleware(sentryDSN string, logger *logrus.Logger) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		cli, err := raven.New(sentryDSN)
+		if err != nil {
+			cli = nil
 		}
-	}()
 
-	next(w, r)
+		reporter := &Reporter{cli, logger, raven.NewHttp(r)}
+		ctx := SetReporterInCtx(r.Context(), reporter)
+		defer func() {
+			if err := recover(); err != nil {
+				reporter.Error(fmt.Errorf("%v", err))
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}()
+	}
 }
