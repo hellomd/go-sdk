@@ -18,6 +18,7 @@ func NewMiddleware(sentryDSN string, logger *logrus.Logger) func(w http.Response
 
 		reporter := &Reporter{cli, logger, raven.NewHttp(r)}
 		ctx := SetReporterInCtx(r.Context(), reporter)
+		next(w, r.WithContext(ctx))
 		defer func() {
 			if err := recover(); err != nil {
 				reporter.Error(fmt.Errorf("%v", err))
