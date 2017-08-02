@@ -8,12 +8,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Event is what is received by a subscription
-type Event struct {
-	Key  string
-	Body []byte
-}
-
 // Subscription can receive events to which it subscribes
 type Subscription struct {
 	subscriberName string
@@ -92,8 +86,9 @@ func (s *Subscription) receiveLoop(ch *amqp.Channel, rcv <-chan amqp.Delivery) e
 		case delivery := <-rcv: // send event
 			if delivery.Acknowledger != nil { // safeguard against closed channel sends
 				s.events <- Event{
-					Key:  delivery.RoutingKey,
-					Body: delivery.Body,
+					Acknowledger: newAcknowledger(&delivery),
+					Key:          delivery.RoutingKey,
+					Body:         delivery.Body,
 				}
 			}
 		case <-s.closer: // stop receiving
@@ -141,4 +136,20 @@ func (s *Subscription) logError(err error) {
 	case s.errors <- err:
 	default:
 	}
+}
+
+func newAcknowledger(delivery *amqp.Delivery) *acknowledger {
+	return &acknowledger{delivery}
+}
+
+type acknowledger struct {
+	delivery *amqp.Delivery
+}
+
+func (a *acknowledger) Reject(requeue bool) {
+	a.delivery.Reject(requeue)
+}
+
+func (a *acknowledger) Ack() {
+	a.delivery.Ack(false)
 }
