@@ -5,23 +5,25 @@ import (
 	"net/http"
 
 	raven "github.com/getsentry/raven-go"
-	"github.com/sirupsen/logrus"
+	"github.com/hellomd/go-sdk/recovery/sentry"
 )
 
-// NewMiddleware returns a middleware that recovers from errors and adds a error reporter to context
-func NewMiddleware(sentryDSN string, logger *logrus.Logger) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+// NewMiddleware creates a new middleware that recovers from errors with optional sentry integration
+func NewMiddleware(sentryDSN string) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := r.Context()
+
 		cli, err := raven.New(sentryDSN)
-		if err != nil {
-			cli = nil
+		if err == nil {
+			cli.SetHttpContext(raven.NewHttp(r))
+			ctx = sentry.SetInCtx(r.Context(), cli)
 		}
 
-		reporter := &Reporter{cli, logger, raven.NewHttp(r)}
-		ctx := SetReporterInCtx(r.Context(), reporter)
 		next(w, r.WithContext(ctx))
+
 		defer func() {
 			if err := recover(); err != nil {
-				reporter.Error(fmt.Errorf("%v", err))
+				HandleError(ctx, fmt.Errorf("%v", err))
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		}()
