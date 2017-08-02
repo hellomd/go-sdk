@@ -51,7 +51,7 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		autoDelete = false
 		exclusive  = false
 		noWait     = false
-		autoAck    = true
+		autoAck    = false
 		noLocal    = false
 	)
 
