@@ -1,6 +1,7 @@
 package recovery
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -8,24 +9,33 @@ import (
 	"github.com/hellomd/go-sdk/recovery/sentry"
 )
 
-// NewMiddleware creates a new middleware that recovers from errors with optional sentry integration
-func NewMiddleware(sentryDSN string) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		ctx := r.Context()
+// Middleware adds a sentry client to the context and recovers from errors using HandleError
+type Middleware struct {
+	SentryDSN   string
+	HandleError func(context.Context, error)
+}
 
-		cli, err := raven.New(sentryDSN)
-		if err == nil {
-			cli.SetHttpContext(raven.NewHttp(r))
-			ctx = sentry.SetInCtx(r.Context(), cli)
-		}
+// NewMiddleware returns a new recovery middleware with the default HandleError function
+func NewMiddleware(SentryDSN string) *Middleware {
+	return &Middleware{SentryDSN, HandleError}
+}
 
-		next(w, r.WithContext(ctx))
+// ServeHTTP Adds sentry client to context and recover from errors
+func (mw *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	ctx := r.Context()
 
-		defer func() {
-			if err := recover(); err != nil {
-				HandleError(ctx, fmt.Errorf("%v", err))
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}()
+	cli, err := raven.New(mw.SentryDSN)
+	if err == nil {
+		cli.SetHttpContext(raven.NewHttp(r))
+		ctx = sentry.SetInCtx(r.Context(), cli)
 	}
+
+	defer func() {
+		if err := recover(); err != nil {
+			mw.HandleError(ctx, fmt.Errorf("%v", err))
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}()
+
+	next(w, r.WithContext(ctx))
 }

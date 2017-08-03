@@ -105,6 +105,12 @@
 			"revisionTime": "2017-06-08T22:14:41Z"
 		},
 		{
+			"checksumSHA1": "egeG/afVkrtqk62j86WS7ATVAbI=",
+			"path": "github.com/smartystreets/goconvey",
+			"revision": "9e8dc3f972df6c8fcc0375ef492c24d0bb204857",
+			"revisionTime": "2017-06-02T16:46:21Z"
+		},
+		{
 			"checksumSHA1": "3XsmaR3i5euGHpt150DerScyOco=",
 			"path": "github.com/streadway/amqp",
 			"revision": "2cbfe40c9341ad63ba23e53013b3ddc7989d801c",
