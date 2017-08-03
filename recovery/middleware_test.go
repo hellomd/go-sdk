@@ -1,89 +1,58 @@
 package recovery
 
 import (
-	"bytes"
-	"testing"
-
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
-	"strings"
-
-	"fmt"
-
-	"reflect"
-
-	raven "github.com/getsentry/raven-go"
-	"github.com/sirupsen/logrus"
+	"github.com/hellomd/go-sdk/recovery/sentry"
+	. "github.com/smartystreets/goconvey/convey"
 	"github.com/urfave/negroni"
 )
 
-type someTypeKey string
+func TestRecoveryMiddleware(t *testing.T) {
+	Convey("RecoveryMiddleware", t, func() {
+		var (
+			receivedErr error
+			receivedCtx context.Context
+		)
 
-const (
-	panicMsg              = "PANIC!"
-	somekey   someTypeKey = "someKey"
-	someValue             = "someValue"
-)
-
-func TestLogRecover(t *testing.T) {
-	errBuffer := &bytes.Buffer{}
-	logger := logrus.New()
-	logger.Out = errBuffer
-
-	fr := &fakeRavenClient{}
-
-	recMid := NewMiddleware(fr, logger)
-
-	response := httptest.NewRecorder()
-	srv := negroni.New(recMid)
-
-	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		panic(panicMsg)
-	})
-
-	testReq := httptest.NewRequest("GET", "/", nil)
-	srv.ServeHTTP(response, testReq)
-
-	if response.Code != http.StatusInternalServerError {
-		t.Errorf("Response Code should be %v, got %v", http.StatusInternalServerError, response.Code)
-	}
-
-	if msg := errBuffer.String(); !strings.Contains(msg, panicMsg) {
-		t.Errorf("Logger should contains %v, but got %v", panicMsg, msg)
-	} else {
-		t.Log(msg)
-	}
-
-	if len(fr.errors) == 1 {
-		if !strings.Contains(fr.errors[0], panicMsg) {
-			t.Errorf("Raven's erros list should countains %v, got %v", panicMsg, fr.errors[0])
-		} else {
-			t.Log(fr.errors)
+		handleError := func(ctx context.Context, err error) {
+			receivedErr = err
+			receivedCtx = ctx
 		}
-	} else {
-		t.Errorf("Size of Raven's errors list should be 1, got %v", len(fr.errors))
-	}
 
-	expHTTP := raven.NewHttp(testReq)
-	if fr.httpContext != nil && reflect.DeepEqual(expHTTP, fr.httpContext) {
-		t.Log(fr.httpContext)
-	} else {
-		t.Errorf("Raven's HTTP Context was not captured. Should be %v, got %v.", expHTTP, fr.httpContext)
-	}
+		response := httptest.NewRecorder()
+		pipeline := negroni.New()
+		pipeline.Use(&Middleware{"", handleError})
 
-}
+		request := func() {
+			pipeline.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/", nil))
+		}
 
-type fakeRavenClient struct {
-	httpContext *raven.Http
-	errors      []string
-}
+		Convey("it injects sentry into context", func() {
+			pipeline.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+				sentry, err := sentry.GetFromCtx(r.Context())
+				So(err, ShouldBeNil)
+				So(sentry, ShouldNotBeNil)
+			})
 
-func (fr *fakeRavenClient) CaptureError(err error, tags map[string]string, interfaces ...raven.Interface) string {
-	fr.errors = append(fr.errors, fmt.Sprintf("erros: %v; tags: %v; interfaces:%v.", err, tags, interfaces))
-	return ""
-}
+			request()
+		})
 
-func (fr *fakeRavenClient) SetHttpContext(http *raven.Http) {
-	fr.httpContext = http
+		Convey("it recovers on panic", func() {
+			expectedErr := errors.New("test error")
+
+			pipeline.UseFunc(func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+				panic(expectedErr)
+			})
+
+			request()
+
+			So(receivedErr.Error(), ShouldEqual, expectedErr.Error())
+			So(response.Code, ShouldEqual, http.StatusInternalServerError)
+		})
+	})
 }

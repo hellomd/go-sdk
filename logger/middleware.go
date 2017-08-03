@@ -43,25 +43,28 @@ func NewMiddleware(l *logrus.Logger) Middleware {
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	start := time.Now()
 
-	lw := newLoggerReponseWriter(w)
-	next(lw, r)
-
-	entry := logrus.NewEntry(mw.logger)
+	requestID := r.Context().Value(requestid.RequestIDCtxKey)
 
 	remoteAddr := r.RemoteAddr
 	if realIP := r.Header.Get(RealIPHeaderKey); realIP != "" {
 		remoteAddr = realIP
 	}
 
+	entry := logrus.NewEntry(mw.logger)
+	entry = entry.WithFields(logrus.Fields{
+		"request_id": requestID,
+		"remote":     remoteAddr,
+	})
+
+	lw := newLoggerReponseWriter(w)
+	next(lw, r.WithContext(SetInCtx(r.Context(), entry)))
+
 	latency := time.Since(start)
-	requestID := r.Context().Value(requestid.RequestIDCtxKey)
 
 	entry.WithFields(logrus.Fields{
-		"request_id": requestID,
-		"path":       r.RequestURI,
-		"method":     r.Method,
-		"remote":     remoteAddr,
-		"took":       latency,
-		"status":     lw.status,
+		"path":   r.RequestURI,
+		"method": r.Method,
+		"took":   latency,
+		"status": lw.status,
 	}).Info("")
 }

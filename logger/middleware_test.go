@@ -54,3 +54,31 @@ func TestBasicLogger(t *testing.T) {
 
 	t.Log(errBuffer.String())
 }
+
+func TestSetsInCtx(t *testing.T) {
+	realIP := "127.0.0.1"
+	errBuffer := &bytes.Buffer{}
+	logger := logrus.New()
+	logger.Out = errBuffer
+
+	srv := negroni.New(NewMiddleware(logger))
+	response := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDCtxKey, myReqID))
+	req.Header.Add(RealIPHeaderKey, realIP)
+
+	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		entry, err := GetFromCtx(r.Context())
+		if err != nil {
+			t.Errorf("Expected nil error got %v", err)
+		}
+		if remoteEntry := entry.Data["remote"]; remoteEntry != realIP {
+			t.Errorf("Expected remote %v got %v", realIP, remoteEntry)
+		}
+		if requestIDEntry := entry.Data["request_id"]; requestIDEntry != myReqID {
+			t.Errorf("Expected request_id %v got %v", myReqID, requestIDEntry)
+		}
+		next(w, r)
+	})
+
+	srv.ServeHTTP(response, req)
+}
