@@ -1,13 +1,29 @@
-test:
-    build: .
-    dockerfile: Dockerfile
-    environment: 
-        MONGO_URL: mongo_db
-        AMQP_URL: "amqp://guest:guest@rabbit"
-    links: 
-        - mongo_db
-        - rabbit
-mongo_db:
-    image: mongo:3.0.15
-rabbit:
-    image: rabbitmq:3-alpine
+version: '2.1'
+
+services:
+    test:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment: 
+            MONGO_URL: mongo_db
+            AMQP_URL: "amqp://guest:guest@rabbit"
+        links: 
+            - mongo_db
+            - rabbit
+
+    mongo_db:
+        image: mongo:3.0.15
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:27017"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+    rabbit:
+        image: rabbitmq
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:5672"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
