@@ -3,7 +3,6 @@ package mongo
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/hellomd/go-sdk/config"
@@ -38,13 +37,12 @@ func test(mdw Middleware, t *testing.T) {
 	a.Use(mw)
 
 	a.Use(negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		dbName := strings.TrimPrefix(mw.mongoURL.Path, "/")
 		v, err := GetFromCtx(r.Context())
 		if err == errNotInCtx {
 			t.Error("Expected database on context")
 		}
-		if v.Name != dbName {
-			t.Errorf("Expected %s database name, got: %s", v.Name, dbName)
+		if v.Name != mw.dbName {
+			t.Errorf("Expected %s database name, got: %s", v.Name, mw.dbName)
 		}
 		if v.Session == mw.session {
 			t.Errorf("Expected session to be different from stored session")
