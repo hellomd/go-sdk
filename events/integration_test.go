@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/hellomd/go-sdk/config"
-	"github.com/hellomd/go-sdk/rabbit"
 	"github.com/streadway/amqp"
 )
 
@@ -87,77 +86,5 @@ func TestPublishSubscribe(t *testing.T) {
 
 	if string(messages[1].Body) != `{"one":1}` {
 		t.Errorf("expected first message to be %v, but was %v", `{"one":1}`, string(messages[1].Body))
-	}
-}
-
-func TestReconnection(t *testing.T) {
-	amqpURL := config.Get("AMQP_URL")
-
-	publisher, err := NewPublisher(amqpURL)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	subscriber := NewSubscriber("testsub", amqpURL)
-
-	sub, err := subscriber.Subscribe("questions.*.created")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	defer sub.Close()
-
-	// publish first event
-	if err := publisher.Publish("questions.article.created", "one"); err != nil {
-		t.Error(err)
-	}
-
-	var evt Event
-
-	// get first event
-	select {
-	case evt = <-sub.Receive():
-		if string(evt.Body) != `"one"` {
-			t.Errorf(`expected "one", but got %v`, string(evt.Body))
-			return
-		}
-	case <-time.After(50 * time.Millisecond):
-		t.Errorf("expected to receive a message, but got none")
-		return
-	}
-
-	// force disconnection
-	{
-		conn, err := rabbit.GetConnection(amqpURL)
-		if err != nil {
-			t.Errorf("unexpected connection error: %v", err)
-			return
-		}
-
-		if err := conn.Close(); err != nil {
-			t.Errorf("failed to force connection to close: %v", err)
-			return
-		}
-	}
-
-	time.Sleep(10 * time.Millisecond)
-
-	// publish new event
-	if err := publisher.Publish("questions.product.created", "two"); err != nil {
-		t.Error(err)
-	}
-
-	// get new event
-	select {
-	case evt = <-sub.Receive():
-		if string(evt.Body) != `"two"` {
-			t.Errorf(`expected "two", but got %v`, string(evt.Body))
-			return
-		}
-	case <-time.After(50 * time.Millisecond):
-		t.Errorf("expected to receive a message, but got none")
-		return
 	}
 }
