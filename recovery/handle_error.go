@@ -2,6 +2,8 @@ package recovery
 
 import (
 	"context"
+	"fmt"
+	"runtime/debug"
 
 	"github.com/hellomd/go-sdk/logger"
 	"github.com/hellomd/go-sdk/recovery/sentry"
@@ -11,7 +13,7 @@ import (
 func HandleError(ctx context.Context, err error) {
 	logger, ctxErr := logger.GetFromCtx(ctx)
 	if ctxErr == nil {
-		logger.Error(err)
+		logger.WithField("stack_trace", fmt.Sprintf("%s", debug.Stack())).Error(err)
 	}
 
 	sentry, ctxErr := sentry.GetFromCtx(ctx)
