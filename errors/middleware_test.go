@@ -1,7 +1,6 @@
 package errors
 
 import (
-	"bytes"
 	"errors"
 	"testing"
 
@@ -9,22 +8,16 @@ import (
 
 	"net/http/httptest"
 
-	"strings"
-
 	"encoding/json"
 
 	"reflect"
 
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
 
 func TestError500(t *testing.T) {
-	errBuffer := &bytes.Buffer{}
-	logger := logrus.New()
-	logger.Out = errBuffer
 
-	srv := negroni.New(NewMiddleware(logger))
+	srv := negroni.New(NewMiddleware())
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		http.Error(w, errors.New("chaos").Error(), http.StatusInternalServerError)
@@ -44,18 +37,11 @@ func TestError500(t *testing.T) {
 		t.Errorf(`Unexpcted error response. Got :"%v", want: %v `, resp, ErrUnexptectedError)
 	}
 
-	if !strings.Contains(errBuffer.String(), "chaos") {
-		t.Errorf("Unexpcted log, got :%v ", errBuffer.String())
-	}
-
 }
 
 func TestError422(t *testing.T) {
-	errBuffer := &bytes.Buffer{}
-	logger := logrus.New()
-	logger.Out = errBuffer
 
-	srv := negroni.New(NewMiddleware(logger))
+	srv := negroni.New(NewMiddleware())
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		info := BasicInfo{"Felix", ""}
@@ -75,11 +61,8 @@ func TestError422(t *testing.T) {
 }
 
 func TestError404(t *testing.T) {
-	errBuffer := &bytes.Buffer{}
-	logger := logrus.New()
-	logger.Out = errBuffer
 
-	srv := negroni.New(NewMiddleware(logger))
+	srv := negroni.New(NewMiddleware())
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		http.Error(w, "User 420 not found", http.StatusNotFound)

@@ -1,12 +1,14 @@
 package errors
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	"bytes"
 
 	"encoding/json"
 
+	"github.com/hellomd/go-sdk/logger"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,19 +37,24 @@ type Middleware interface {
 }
 
 type middleware struct {
-	logger *logrus.Logger
+	//logger *logrus.Logger
 }
 
 // NewMiddleware -
-func NewMiddleware(l *logrus.Logger) Middleware {
-	return &middleware{l}
+func NewMiddleware() Middleware {
+	return &middleware{}
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	eWriter := &errorReponseWriter{w, http.StatusOK, bytes.NewBuffer([]byte{})}
 	next(eWriter, r)
 
-	entry := logrus.NewEntry(mw.logger)
+	entry, err := logger.GetFromCtx(r.Context())
+	if err != nil {
+		logger := logrus.New()
+		logger.Out = ioutil.Discard
+		entry = logrus.NewEntry(logger)
+	}
 
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
 		entry.Warn(eWriter.body.String())
