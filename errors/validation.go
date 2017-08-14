@@ -13,9 +13,9 @@ const (
 	validationErrorMsg  = "Entity Validation Failed"
 )
 
-var validate = ValidateMD{validator.New()}
-
-func init() {
+// NewValidator -
+func NewValidator() *ValidateMD {
+	validate := &ValidateMD{validator.New()}
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 
@@ -25,11 +25,7 @@ func init() {
 
 		return name
 	})
-}
-
-// New -
-func New() *ValidateMD {
-	return &validate
+	return validate
 }
 
 // ValidateMD is HelloMD APIs validator

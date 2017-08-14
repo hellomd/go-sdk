@@ -11,7 +11,7 @@ type BasicInfo struct {
 }
 
 func TestValidator(t *testing.T) {
-	validator := New()
+	validator := NewValidator()
 
 	info := BasicInfo{
 		"Felix",

@@ -45,7 +45,7 @@ func TestError422(t *testing.T) {
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		info := BasicInfo{"Felix", ""}
-		http.Error(w, validate.Struct(info).Error(), http.StatusUnprocessableEntity)
+		http.Error(w, NewValidator().Struct(info).Error(), http.StatusUnprocessableEntity)
 	})
 
 	response := httptest.NewRecorder()
