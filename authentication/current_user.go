@@ -5,7 +5,7 @@ type User struct {
 	ID        string `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
-	Service   string `json:"service"`
+	IsService *bool  `json:"isService,omitempty"`
 }
 
 // Empty -
