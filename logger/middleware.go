@@ -1,9 +1,12 @@
 package logger
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/hellomd/go-sdk/errors"
 	"github.com/hellomd/go-sdk/requestid"
 	"github.com/sirupsen/logrus"
 )
@@ -15,10 +18,18 @@ const RealIPHeaderKey = "X-Real-IP"
 type loggerReponseWriter struct {
 	http.ResponseWriter
 	status int
+	body   string
 }
 
 func newLoggerReponseWriter(w http.ResponseWriter) *loggerReponseWriter {
-	return &loggerReponseWriter{w, http.StatusOK}
+	return &loggerReponseWriter{w, http.StatusOK, ""}
+}
+
+func (lrw *loggerReponseWriter) Write(body []byte) (int, error) {
+	if lrw.status >= http.StatusBadRequest {
+		lrw.body = string(body)
+	}
+	return lrw.ResponseWriter.Write(body)
 }
 
 func (lrw *loggerReponseWriter) WriteHeader(code int) {
@@ -32,12 +43,14 @@ type Middleware interface {
 }
 
 type middleware struct {
-	logger *logrus.Logger
+	appName     string
+	environment string
+	logger      *logrus.Logger
 }
 
 // NewMiddleware -
-func NewMiddleware(l *logrus.Logger) Middleware {
-	return &middleware{l}
+func NewMiddleware(appName, environment string, logger *logrus.Logger) Middleware {
+	return &middleware{appName, environment, logger}
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -52,19 +65,46 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 
 	entry := logrus.NewEntry(mw.logger)
 	entry = entry.WithFields(logrus.Fields{
-		"request_id": requestID,
-		"remote":     remoteAddr,
+		"request_id":       requestID,
+		"remote":           remoteAddr,
+		"path":             r.RequestURI,
+		"method":           r.Method,
+		"application_name": mw.appName,
+		"environment":      mw.environment,
 	})
 
 	lw := newLoggerReponseWriter(w)
 	next(lw, r.WithContext(SetInCtx(r.Context(), entry)))
 
 	latency := time.Since(start)
-
-	entry.WithFields(logrus.Fields{
-		"path":   r.RequestURI,
-		"method": r.Method,
-		"took":   latency,
+	message := fmt.Sprintf("%v %v | %v | %v \"%v\"", r.Method, r.RequestURI, latency, lw.status, lw.GetErrorMessage())
+	newEntry := entry.WithFields(logrus.Fields{
+		"took":   latency / time.Millisecond,
 		"status": lw.status,
-	}).Info("")
+	})
+
+	if lw.status >= http.StatusBadRequest && lw.status < http.StatusInternalServerError {
+		newEntry.Warn(message)
+		return
+	}
+
+	if lw.status >= http.StatusInternalServerError {
+		newEntry.Error(message)
+		return
+	}
+
+	newEntry.Info(message)
+}
+
+// GetErrorMessage -
+func (lrw *loggerReponseWriter) GetErrorMessage() string {
+	if lrw.status >= http.StatusBadRequest {
+		jsonError := errors.JSONError{}
+		err := json.Unmarshal([]byte(lrw.body), &jsonError)
+		if err != nil {
+			return lrw.body
+		}
+		return jsonError.Message
+	}
+	return http.StatusText(lrw.status)
 }

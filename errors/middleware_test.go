@@ -33,8 +33,9 @@ func TestError500(t *testing.T) {
 		t.Errorf(`Unexpcted error on parse json, got :"%v" `, err.Error())
 	}
 
-	if !reflect.DeepEqual(resp, ErrUnexptectedError) {
-		t.Errorf(`Unexpcted error response. Got :"%v", want: %v `, resp, ErrUnexptectedError)
+	expectedError := &JSONError{Code: "internal_server_error", Message: "internal server error"}
+	if !reflect.DeepEqual(resp, expectedError) {
+		t.Errorf(`Unexpcted error response. Got :"%v", want: %v `, resp, expectedError)
 	}
 
 }

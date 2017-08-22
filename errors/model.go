@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 )
 
+// JSONError -
 type JSONError struct {
-	Code        string                `json:"code"`
-	Message     string                `json:"message"`
-	Description string                `json:"description,omitempty"`
-	Erros       []ValidationJSONError `json:"errors,omitempty"`
+	Code    string                `json:"code"`
+	Message string                `json:"message"`
+	Errors  []ValidationJSONError `json:"errors,omitempty"`
 }
 
 func (jError *JSONError) Error() string {

@@ -18,15 +18,17 @@ import (
 
 const (
 	myReqID = "42"
+	app     = "app"
+	env     = "env"
+	realIP  = "127.0.0.1"
 )
 
 func TestBasicLogger(t *testing.T) {
-	realIP := "127.0.0.1"
 	errBuffer := &bytes.Buffer{}
 	logger := logrus.New()
 	logger.Out = errBuffer
 
-	srv := negroni.New(NewMiddleware(logger))
+	srv := negroni.New(NewMiddleware(app, env, logger))
 	response := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDCtxKey, myReqID))
 	req.Header.Add(RealIPHeaderKey, realIP)
@@ -50,18 +52,24 @@ func TestBasicLogger(t *testing.T) {
 		if !strings.Contains(msg, realIP) {
 			t.Errorf("Expected %v in RealIP, got '%v' in log", realIP, msg)
 		}
+		if !strings.Contains(msg, app) {
+			t.Errorf("Expected %v in App, got '%v' in log", app, msg)
+		}
+		if !strings.Contains(msg, env) {
+			t.Errorf("Expected %v in Env, got '%v' in log", env, msg)
+		}
 	}
 
 	t.Log(errBuffer.String())
 }
 
 func TestSetsInCtx(t *testing.T) {
-	realIP := "127.0.0.1"
+
 	errBuffer := &bytes.Buffer{}
 	logger := logrus.New()
 	logger.Out = errBuffer
 
-	srv := negroni.New(NewMiddleware(logger))
+	srv := negroni.New(NewMiddleware(app, env, logger))
 	response := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil).WithContext(context.WithValue(nil, requestid.RequestIDCtxKey, myReqID))
 	req.Header.Add(RealIPHeaderKey, realIP)
@@ -76,6 +84,12 @@ func TestSetsInCtx(t *testing.T) {
 		}
 		if requestIDEntry := entry.Data["request_id"]; requestIDEntry != myReqID {
 			t.Errorf("Expected request_id %v got %v", myReqID, requestIDEntry)
+		}
+		if appEntry := entry.Data["application_name"]; appEntry != app {
+			t.Errorf("Expected application_name %v got %v", app, appEntry)
+		}
+		if envEntry := entry.Data["environment"]; envEntry != env {
+			t.Errorf("Expected environment %v got %v", env, envEntry)
 		}
 		next(w, r)
 	})

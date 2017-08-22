@@ -1,16 +1,12 @@
 package errors
 
 import (
-	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"bytes"
 
 	"encoding/json"
-
-	"github.com/hellomd/go-sdk/logger"
-	"github.com/sirupsen/logrus"
 )
 
 // errorReponseWriter - wrapper to ResponseWriter
@@ -38,7 +34,6 @@ type Middleware interface {
 }
 
 type middleware struct {
-	//logger *logrus.Logger
 }
 
 // NewMiddleware -
@@ -50,45 +45,26 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 	eWriter := &errorReponseWriter{w, http.StatusOK, bytes.NewBuffer([]byte{})}
 	next(eWriter, r)
 
-	entry, err := logger.GetFromCtx(r.Context())
-	if err != nil {
-		logger := logrus.New()
-		logger.Out = ioutil.Discard
-		entry = logrus.NewEntry(logger)
-	}
-
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
-		entry.Warn(eWriter.body.String())
 		if isErrorJSON(eWriter.body.Bytes()) {
 			eWriter.ResponseWriter.Write(eWriter.body.Bytes())
 		} else {
-			var resp *JSONError
-			switch eWriter.status {
-			case http.StatusNotFound:
-				resp = ErrNotFound
-			default:
-				resp = default4xxJSONError(eWriter.status)
-			}
+			resp := &JSONError{Code: errorCode(eWriter.status), Message: string(eWriter.body.Bytes())}
 			eWriter.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(eWriter.ResponseWriter).Encode(resp)
 		}
 	}
 
 	if eWriter.status >= http.StatusInternalServerError {
-		entry.Error(eWriter.body.String())
-		json.NewEncoder(eWriter.ResponseWriter).Encode(ErrUnexptectedError)
+		json.NewEncoder(eWriter.ResponseWriter).Encode(&JSONError{Code: errorCode(eWriter.status), Message: "internal server error"})
 	}
-
 }
 
 func isErrorJSON(body []byte) bool {
-	jError := JSONError{}
-	return json.Unmarshal(body, &jError) == nil
+	return json.Unmarshal(body, &JSONError{}) == nil
 }
 
-func default4xxJSONError(status int) *JSONError {
+func errorCode(status int) string {
 	lowerCode := strings.ToLower(http.StatusText(status))
-	errorCode := strings.Replace(lowerCode, " ", "_", -1)
-	errorMessage := "The request is " + lowerCode
-	return &JSONError{Code: errorCode, Message: errorMessage}
+	return strings.Replace(lowerCode, " ", "_", -1)
 }
