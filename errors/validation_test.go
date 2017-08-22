@@ -21,7 +21,7 @@ func TestValidator(t *testing.T) {
 	expctedError := JSONError{
 		Code:    validationErrorCode,
 		Message: validationErrorMsg,
-		Erros: []ValidationJSONError{ValidationJSONError{
+		Errors: []ValidationJSONError{ValidationJSONError{
 			"required",
 			"last_name",
 			"last_name is required",
@@ -29,17 +29,13 @@ func TestValidator(t *testing.T) {
 	}
 
 	err := validator.Struct(info)
-	if err == ErrInvalidFields {
-		resp := JSONError{}
-		err = json.Unmarshal([]byte(err.Error()), &resp)
-		if err != nil {
-			t.Error("Error message is not a json, got error: ", err.Error())
-		}
-
-		if !reflect.DeepEqual(expctedError, resp) {
-			t.Errorf("Expected error to be %v, go %v", expctedError, resp)
-		}
-
+	resp := JSONError{}
+	err = json.Unmarshal([]byte(err.Error()), &resp)
+	if err != nil {
+		t.Error("Error message is not a json, got error: ", err.Error())
 	}
 
+	if !reflect.DeepEqual(expctedError, resp) {
+		t.Errorf("Expected error to be %v, go %v", expctedError, resp)
+	}
 }

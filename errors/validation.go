@@ -37,8 +37,7 @@ type ValidateMD struct {
 func (mv *ValidateMD) Struct(s interface{}) error {
 	err := mv.Validate.Struct(s)
 	if err != nil {
-		ErrInvalidFields.errors = err.(validator.ValidationErrors)
-		return ErrInvalidFields
+		return &validationError{err.(validator.ValidationErrors)}
 	}
 	return nil
 }
@@ -47,6 +46,7 @@ type validationError struct {
 	errors []validator.FieldError
 }
 
+// ValidationJSONError -
 type ValidationJSONError struct {
 	Code    string `json:"code"`
 	Field   string `json:"field"`
@@ -64,7 +64,7 @@ func (v *validationError) Error() string {
 	b, _ := json.Marshal(JSONError{
 		Code:    validationErrorCode,
 		Message: validationErrorMsg,
-		Erros:   a,
+		Errors:  a,
 	})
 	return string(b)
 
