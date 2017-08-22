@@ -42,11 +42,13 @@ func NewMiddleware(secret []byte) func(w http.ResponseWriter, r *http.Request, n
 
 		ctx := r.Context()
 
+		isService := new(bool)
+		*isService = true
 		serviceToken, err := tokenCreator.CreateAccessTkn(&TokenExtraClaims{
 			ID:        user.ID,
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
-			IsService: true,
+			IsService: isService,
 		}, time.Now().Add(1*time.Hour))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
