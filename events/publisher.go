@@ -41,7 +41,7 @@ type Publisher struct {
 }
 
 // Publish publishes an event
-func (c *Publisher) Publish(key string, body interface{}) error {
+func (c *Publisher) Publish(key string, body interface{}, headers map[string]string) error {
 	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
@@ -52,7 +52,16 @@ func (c *Publisher) Publish(key string, body interface{}) error {
 		return fmt.Errorf("error marshalling body: %v", err)
 	}
 
-	pub := amqp.Publishing{Body: bodyJSON}
+	headersTable := amqp.Table{}
+	for k, v := range headers {
+		headersTable[k] = v
+	}
+
+	pub := amqp.Publishing{
+		Body:    bodyJSON,
+		Headers: headersTable,
+	}
+
 	if err := ch.Publish(ExchangeName, key, mandatory, immediate, pub); err != nil {
 		return fmt.Errorf("error publishing event: %v", err)
 	}

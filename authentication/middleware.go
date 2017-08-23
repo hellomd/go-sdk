@@ -9,7 +9,11 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-const headerKey = "Authorization"
+const (
+	// Scheme is the Authorization header scheme
+	Scheme    = "bearer"
+	headerKey = "Authorization"
+)
 
 var errInvalidHeader = errors.New("invalid authorization header")
 
@@ -26,7 +30,7 @@ func NewMiddleware(secret []byte) func(w http.ResponseWriter, r *http.Request, n
 		authorization := r.Header.Get(headerKey)
 		if authorization != "" {
 			parts := strings.Split(authorization, " ")
-			if len(parts) != 2 || parts[0] != "bearer" {
+			if len(parts) != 2 || parts[0] != Scheme {
 				http.Error(w, errInvalidHeader.Error(), http.StatusUnauthorized)
 				return
 			}
