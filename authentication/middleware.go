@@ -1,65 +1,20 @@
 package authentication
 
 import (
-	"errors"
 	"net/http"
-	"strings"
-	"time"
-
-	jwt "github.com/dgrijalva/jwt-go"
 )
-
-const (
-	// Scheme is the Authorization header scheme
-	Scheme    = "bearer"
-	headerKey = "Authorization"
-)
-
-var errInvalidHeader = errors.New("invalid authorization header")
 
 // NewMiddleware -
 func NewMiddleware(secret []byte) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	tokenCreator := NewTokenCreator(secret)
-	validateJWT := func(token *jwt.Token) (interface{}, error) {
-		return secret, nil
-	}
+	ctxAuth := NewContextAuthenticator(secret)
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		user := &User{}
-
-		authorization := r.Header.Get(headerKey)
-		if authorization != "" {
-			parts := strings.Split(authorization, " ")
-			if len(parts) != 2 || parts[0] != Scheme {
-				http.Error(w, errInvalidHeader.Error(), http.StatusUnauthorized)
-				return
-			}
-
-			token := parts[1]
-			claims := &Claims{User: user}
-			_, err := jwt.ParseWithClaims(token, claims, validateJWT)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
-				return
-			}
-		}
-
-		ctx := r.Context()
-
-		isService := new(bool)
-		*isService = true
-		serviceToken, err := tokenCreator.CreateAccessTkn(&TokenExtraClaims{
-			ID:        user.ID,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			IsService: isService,
-		}, time.Now().Add(1*time.Hour))
+		ctx, err := ctxAuth(r.Context(), r.Header.Get(HeaderKey))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		ctx = SetServiceTokenInCtx(ctx, serviceToken)
-		next(w, r.WithContext(SetUserInCtx(ctx, user)))
+		next(w, r.WithContext(ctx))
 	}
 }
