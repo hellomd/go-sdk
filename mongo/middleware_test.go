@@ -28,8 +28,7 @@ func TestMiddlewareWithoutSSL(t *testing.T) {
 // 	test(mdw, t)
 // }
 
-func test(mdw Middleware, t *testing.T) {
-	mw := mdw.(*middleware)
+func test(mw *Middleware, t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 

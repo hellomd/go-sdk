@@ -10,8 +10,7 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
-// CreateSession returns a new mongo session and its DB name
-func CreateSession(mongoURL string, useSSL bool) (*mgo.Session, string, error) {
+func createSession(mongoURL string, useSSL bool) (*mgo.Session, string, error) {
 	url, err := url.Parse(mongoURL)
 	if err != nil {
 		return nil, "", err
