@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/hellomd/go-sdk/events"
+	"github.com/sirupsen/logrus"
 )
 
 func ExampleSubscriber() {
-	subscriber := events.NewSubscriber("feed", "amqp://guest:guest@localhost.com")
+	subscriber := events.NewSubscriber("feed", "amqp://guest:guest@localhost.com", logrus.New())
 
 	sub, err := subscriber.Subscribe("question.*.created")
 	if err != nil {

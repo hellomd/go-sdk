@@ -2,12 +2,14 @@ package events
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/hellomd/go-sdk/config"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -37,7 +39,9 @@ func TestPublishSubscribe(t *testing.T) {
 		return
 	}
 
-	subscriber := NewSubscriber("testsub", amqpURL)
+	logger := logrus.New()
+	logger.Out = ioutil.Discard
+	subscriber := NewSubscriber("testsub", amqpURL, logger)
 
 	sub, err := subscriber.Subscribe("questions.*.created")
 	if err != nil {
