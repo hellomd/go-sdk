@@ -16,13 +16,26 @@ const RealIPHeaderKey = "X-Real-IP"
 
 // loggerReponseWriter - wrapper to ResponseWriter
 type loggerReponseWriter struct {
+	http.Flusher
 	http.ResponseWriter
+	http.CloseNotifier
 	status int
 	body   string
 }
 
 func newLoggerReponseWriter(w http.ResponseWriter) *loggerReponseWriter {
-	return &loggerReponseWriter{w, http.StatusOK, ""}
+	var flusher http.Flusher
+	var cNotifier http.CloseNotifier
+	var ok bool
+	if flusher, ok = w.(http.Flusher); !ok {
+		flusher = nil
+	}
+
+	if cNotifier, ok = w.(http.CloseNotifier); !ok {
+		cNotifier = nil
+	}
+
+	return &loggerReponseWriter{flusher, w, cNotifier, http.StatusOK, ""}
 }
 
 func (lrw *loggerReponseWriter) Write(body []byte) (int, error) {
