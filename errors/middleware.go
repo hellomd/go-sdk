@@ -11,9 +11,26 @@ import (
 
 // errorReponseWriter - wrapper to ResponseWriter
 type errorReponseWriter struct {
+	http.Flusher
 	http.ResponseWriter
+	http.CloseNotifier
 	status int
 	body   *bytes.Buffer
+}
+
+func newErrorReponseWriter(w http.ResponseWriter) *errorReponseWriter {
+	var flusher http.Flusher
+	var cNotifier http.CloseNotifier
+	var ok bool
+	if flusher, ok = w.(http.Flusher); !ok {
+		flusher = nil
+	}
+
+	if cNotifier, ok = w.(http.CloseNotifier); !ok {
+		cNotifier = nil
+	}
+
+	return &errorReponseWriter{flusher, w, cNotifier, http.StatusOK, bytes.NewBuffer([]byte{})}
 }
 
 func (erw *errorReponseWriter) Write(data []byte) (int, error) {
@@ -42,7 +59,7 @@ func NewMiddleware() Middleware {
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	eWriter := &errorReponseWriter{w, http.StatusOK, bytes.NewBuffer([]byte{})}
+	eWriter := newErrorReponseWriter(w)
 	next(eWriter, r)
 
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
