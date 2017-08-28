@@ -6,7 +6,7 @@ import (
 
 // NewMiddleware -
 func NewMiddleware(secret []byte) func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	ctxAuth := NewContextAuthenticator(secret)
+	ctxAuth := NewContextMiddleware(secret)
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		ctx, err := ctxAuth(r.Context(), r.Header.Get(HeaderKey))

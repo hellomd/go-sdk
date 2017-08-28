@@ -19,8 +19,8 @@ const (
 
 var errInvalidHeader = errors.New("invalid authorization header")
 
-// NewContextAuthenticator creates a function that stores authentication information in context
-func NewContextAuthenticator(secret []byte) func(ctx context.Context, authHeader string) (context.Context, error) {
+// NewContextMiddleware creates a function that stores authentication information in context
+func NewContextMiddleware(secret []byte) func(ctx context.Context, authHeader string) (context.Context, error) {
 	tokenCreator := NewTokenCreator(secret)
 	validateJWT := func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
