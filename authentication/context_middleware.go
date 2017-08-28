@@ -31,7 +31,7 @@ func NewContextMiddleware(secret []byte) func(ctx context.Context, authHeader st
 
 		if authHeader != "" {
 			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || parts[0] != Scheme {
+			if len(parts) != 2 || !strings.EqualFold(parts[0], Scheme) {
 				return nil, errInvalidHeader
 			}
 
