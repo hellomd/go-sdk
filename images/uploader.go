@@ -34,7 +34,7 @@ func NewUploader(basePath string) (Uploader, error) {
 		return nil, err
 	}
 
-	cfg := aws.NewConfig().WithRegion("us-west-2").WithCredentials(creds)
+	cfg := aws.NewConfig().WithRegion(config.Get(AWSRegionCfgKey)).WithCredentials(creds)
 	return &S3Uploader{basePath, s3.New(session.New(), cfg)}, nil
 }
 
