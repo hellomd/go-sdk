@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	awsS3BucketName   = "hellomd-images"
-	s3FileURLTemplate = "https://%v.s3.amazonaws.com/%v"
+	s3FileURLTemplate  = "https://%v.s3.amazonaws.com/%v"
+	s3filePathTemplate = "%v/%v/original%v"
 )
 
 type Uploader interface {
@@ -24,17 +24,18 @@ type Uploader interface {
 }
 
 type S3Uploader struct {
+	basePath string
 	s3iface.S3API
 }
 
-func NewUploader() (Uploader, error) {
+func NewUploader(basePath string) (Uploader, error) {
 	creds := credentials.NewStaticCredentials(config.Get(AWSKeyCfgKey), config.Get(AWSSecretCfgKey), "")
 	if _, err := creds.Get(); err != nil {
 		return nil, err
 	}
 
 	cfg := aws.NewConfig().WithRegion("us-west-2").WithCredentials(creds)
-	return &S3Uploader{s3.New(session.New(), cfg)}, nil
+	return &S3Uploader{basePath, s3.New(session.New(), cfg)}, nil
 }
 
 func (u *S3Uploader) Upload(fileName string, data []byte) (string, error) {
@@ -45,9 +46,10 @@ func (u *S3Uploader) Upload(fileName string, data []byte) (string, error) {
 		return "", ErrInvalidExtension
 	}
 
-	path := config.Get(AWSBasePathCfgKey) + "/" + fileName + "/original" + fileExtension[0]
+	bucket := config.Get(AWSBucketCfgKey)
+	path := fmt.Sprintf(s3filePathTemplate, u.basePath, fileName, fileExtension[0])
 	params := &s3.PutObjectInput{
-		Bucket:      aws.String(awsS3BucketName),
+		Bucket:      aws.String(bucket),
 		Key:         aws.String(path),
 		Body:        fileBytes,
 		ContentType: aws.String(fileType),
@@ -57,5 +59,5 @@ func (u *S3Uploader) Upload(fileName string, data []byte) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(s3FileURLTemplate, awsS3BucketName, path), nil
+	return fmt.Sprintf(s3FileURLTemplate, bucket, path), nil
 }
