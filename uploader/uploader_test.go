@@ -1,4 +1,4 @@
-package images
+package uploader
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ const (
 )
 
 func TestS3Uploader(t *testing.T) {
-	Convey("Given an AWS S3 Image Uploader", t, func() {
+	Convey("Given an AWS S3 file Uploader", t, func() {
 		uploader, storage := setup()
 		Convey("When I try to upload an image", func() {
 			fileURL, err := uploader.Upload(testImageName, []byte(testImage))

@@ -1,4 +1,4 @@
-package images
+package uploader
 
 import "errors"
 
