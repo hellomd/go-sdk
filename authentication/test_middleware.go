@@ -20,5 +20,8 @@ func (t *TestMiddleware) SetUser(user *User) {
 }
 
 func (t *TestMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	next(w, r.WithContext(SetUserInCtx(r.Context(), t.user)))
+	ctx := r.Context()
+	ctx = SetUserInCtx(ctx, t.user)
+	ctx = SetServiceTokenInCtx(ctx, "fake-service-token")
+	next(w, r.WithContext(ctx))
 }
