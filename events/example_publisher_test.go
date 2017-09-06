@@ -15,7 +15,7 @@ func ExamplePublisher() {
 	err = pub.Publish("questions.article.created", map[string]interface{}{
 		"id":    "abc123",
 		"title": "What is the meaning of life?",
-	})
+	}, nil)
 	if err != nil {
 		panic(fmt.Errorf("error publishing question: %v", err))
 	}

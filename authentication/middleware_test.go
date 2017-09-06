@@ -57,7 +57,7 @@ func TestBadAuthorization(t *testing.T) {
 	for _, header := range badHeaders {
 		response := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
-		req.Header.Add(headerKey, header)
+		req.Header.Add(HeaderKey, header)
 		srv.ServeHTTP(response, req)
 
 		if response.Code != http.StatusUnauthorized {
@@ -82,7 +82,7 @@ func TestGoodToken(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
-	req.Header.Add(headerKey, "bearer "+newToken(userID))
+	req.Header.Add(HeaderKey, "bearer "+newToken(userID))
 	srv.ServeHTTP(response, req)
 
 	if response.Code != http.StatusOK {

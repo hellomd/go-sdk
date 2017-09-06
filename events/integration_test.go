@@ -2,12 +2,14 @@ package events
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/hellomd/go-sdk/config"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -37,7 +39,9 @@ func TestPublishSubscribe(t *testing.T) {
 		return
 	}
 
-	subscriber := NewSubscriber("testsub", amqpURL)
+	logger := logrus.New()
+	logger.Out = ioutil.Discard
+	subscriber := NewSubscriber("testsub", amqpURL, logger)
 
 	sub, err := subscriber.Subscribe("questions.*.created")
 	if err != nil {
@@ -61,15 +65,16 @@ func TestPublishSubscribe(t *testing.T) {
 
 			case evt := <-sub.Receive():
 				messages = append(messages, evt)
+				evt.Ack()
 			}
 		}
 	}()
 
-	if err := publisher.Publish("questions.article.created", map[string]string{"foo": "bar"}); err != nil {
+	if err := publisher.Publish("questions.article.created", map[string]string{"foo": "bar"}, nil); err != nil {
 		t.Error(err)
 	}
 
-	if err := publisher.Publish("questions.product.created", map[string]int{"one": 1}); err != nil {
+	if err := publisher.Publish("questions.product.created", map[string]int{"one": 1}, nil); err != nil {
 		t.Error(err)
 	}
 

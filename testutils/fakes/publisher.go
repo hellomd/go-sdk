@@ -16,7 +16,7 @@ type Publisher struct {
 }
 
 // Publish stores in the publisher instance the events that were published by it
-func (p *Publisher) Publish(key string, body interface{}) error {
+func (p *Publisher) Publish(key string, body interface{}, header map[string]string) error {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
@@ -29,7 +29,7 @@ func (p *Publisher) Publish(key string, body interface{}) error {
 		return fmt.Errorf("error marshalling body: %v", err)
 	}
 
-	p.published = append(p.published, events.Event{Key: key, Body: marshalled})
+	p.published = append(p.published, events.Event{Key: key, Body: marshalled, Header: header})
 	return nil
 }
 
@@ -42,5 +42,5 @@ var _ publisher = &Publisher{}
 var _ publisher = &events.Publisher{}
 
 type publisher interface {
-	Publish(key string, body interface{}) error
+	Publish(key string, body interface{}, header map[string]string) error
 }
