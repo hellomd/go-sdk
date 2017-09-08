@@ -47,8 +47,7 @@ func NewContextMiddleware(secret []byte) func(ctx context.Context, authHeader st
 		*isService = true
 		serviceToken, err := tokenCreator.CreateAccessTkn(&TokenExtraClaims{
 			ID:        user.ID,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
+			Email:     user.Email,
 			IsService: isService,
 		}, time.Now().Add(1*time.Hour))
 		if err != nil {
