@@ -233,6 +233,12 @@
 			"revisionTime": "2017-05-03T22:40:06Z"
 		},
 		{
+			"checksumSHA1": "7lw9JKU3fz/PdU42PL8Cj3BhYI0=",
+			"path": "github.com/logmatic/logmatic-go",
+			"revision": "9eb00af17b4c3c788c9b88a476c98fec79dd39df",
+			"revisionTime": "2017-09-01T13:10:29Z"
+		},
+		{
 			"checksumSHA1": "fG/hdI57tzm9CfcELMa7QVXESR8=",
 			"path": "github.com/newrelic/go-agent",
 			"revision": "29ec3cd1bb2f21d21d36da37dae52695cb2c3a17",
@@ -377,10 +383,22 @@
 			"revisionTime": "2017-06-04T13:12:13Z"
 		},
 		{
+			"checksumSHA1": "nqWNlnMmVpt628zzvyo6Yv2CX5Q=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "faadfbdc035307d901e69eea569f5dda451a3ee3",
+			"revisionTime": "2017-09-12T19:17:24Z"
+		},
+		{
 			"checksumSHA1": "8fD/im5Kwvy3JgmxulDTambmE8w=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "30de6d19a3bd89a5f38ae4028e23aaa5582648af",
 			"revisionTime": "2016-09-07T05:59:14Z"
+		},
+		{
+			"checksumSHA1": "pBPFzDGt3AVSRffB7ffiUnruFUk=",
+			"path": "golang.org/x/sys/windows",
+			"revision": "062cd7e4e68206d8bab9b18396626e855c992658",
+			"revisionTime": "2017-09-12T16:19:26Z"
 		},
 		{
 			"checksumSHA1": "bghmjNaktOtwAJkf3Vql4cofS3M=",
