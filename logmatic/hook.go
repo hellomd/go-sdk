@@ -7,12 +7,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Config is the configuration for the hook
 type Config struct {
-	APIKey     string
-	Interval   time.Duration
+	// APIKey is your private key for using Logmatic API
+	APIKey string
+
+	// Interval is how often bufferred logs will be sent to Logmatic (default is 5 seconds)
+	Interval time.Duration
+
+	// BufferSize is the maximum number of events that will be sent to Logmatic at once (default is 100)
 	BufferSize int
 }
 
+// NewLogrusHook creates a new hook for sending logs to Logmatic with Logrus
 func NewLogrusHook(config Config) logrus.Hook {
 	if config.APIKey == "" {
 		panic("logmatic API key should is required")
