@@ -22,7 +22,7 @@ type Config struct {
 // NewLogrusHook creates a new hook for sending logs to Logmatic with Logrus
 func NewLogrusHook(config Config) logrus.Hook {
 	if config.APIKey == "" {
-		panic("logmatic API key should is required")
+		panic("logmatic API key is required")
 	}
 
 	if config.Interval == 0 {
