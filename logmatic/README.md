@@ -2,6 +2,9 @@
 
 A Logrus hook that sends logs to Logmatic via HTTP.
 
+The hook sends events in batch, based on an `Interval` and a `BufferSize`. The events will only be sent
+at every tick of `Interval`, or when the number of events reaches `BufferSize`.
+
 ## Usage
 
 ```go
