@@ -17,8 +17,6 @@ const (
 	statusRejected = "rejected"
 )
 
-var _ events.Acknowledger = &loggerAcknowledger{}
-
 func NewMiddleware(appName, env string, instance *logrus.Logger) events.PipelineHandlerFunc {
 	return func(ctx context.Context, e *events.Event, next events.HandlerFunc) {
 		start := time.Now()
