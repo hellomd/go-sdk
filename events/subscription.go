@@ -146,7 +146,7 @@ type acknowledger struct {
 	delivery *amqp.Delivery
 }
 
-func (a *acknowledger) Reject(requeue bool) {
+func (a *acknowledger) Reject(requeue bool, _ error) {
 	a.delivery.Reject(requeue)
 }
 

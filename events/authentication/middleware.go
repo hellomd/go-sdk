@@ -12,7 +12,7 @@ func NewMiddleware(secret []byte) func(context.Context, *events.Event, events.Ha
 	return func(ctx context.Context, event *events.Event, next events.HandlerFunc) {
 		ctx, err := ctxAuth(ctx, event.Header[authentication.HeaderKey])
 		if err != nil {
-			event.Reject(false)
+			event.Reject(false, err)
 			return
 		}
 

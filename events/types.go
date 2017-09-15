@@ -6,7 +6,7 @@ import (
 
 // Acknowledger sends feedback on whether the event has been successfully processed or not
 type Acknowledger interface {
-	Reject(bool)
+	Reject(bool, error)
 	Ack()
 }
 
