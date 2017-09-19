@@ -85,10 +85,18 @@ func (s *Subscription) receiveLoop(ch *amqp.Channel, rcv <-chan amqp.Delivery) e
 			return err
 		case delivery := <-rcv: // send event
 			if delivery.Acknowledger != nil { // safeguard against closed channel sends
+				header := map[string]string{}
+				for k, v := range delivery.Headers {
+					if sv, ok := v.(string); ok {
+						header[k] = sv
+					}
+				}
+
 				s.events <- Event{
 					Acknowledger: newAcknowledger(&delivery),
 					Key:          delivery.RoutingKey,
 					Body:         delivery.Body,
+					Header:       header,
 				}
 			}
 		case <-s.closer: // stop receiving
