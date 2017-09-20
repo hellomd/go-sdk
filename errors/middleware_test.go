@@ -12,15 +12,23 @@ import (
 
 	"reflect"
 
+	raven "github.com/getsentry/raven-go"
 	"github.com/urfave/negroni"
 )
 
 func TestError500(t *testing.T) {
+	var actualErr error
+	originalErr := errors.New("chaos")
 
-	srv := negroni.New(NewMiddleware())
+	captureError := func(err error, tags map[string]string, interfaces ...raven.Interface) string {
+		actualErr = err
+		return ""
+	}
+
+	srv := negroni.New(&middleware{captureError})
 
 	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		http.Error(w, errors.New("chaos").Error(), http.StatusInternalServerError)
+		http.Error(w, originalErr.Error(), http.StatusInternalServerError)
 	})
 
 	response := httptest.NewRecorder()
@@ -38,6 +46,9 @@ func TestError500(t *testing.T) {
 		t.Errorf(`Unexpcted error response. Got :"%v", want: %v `, resp, expectedError)
 	}
 
+	if actualErr.Error() != originalErr.Error() {
+		t.Errorf(`Unexpcted error captured. Got :"%v", want: %v `, actualErr, originalErr)
+	}
 }
 
 func TestError422(t *testing.T) {

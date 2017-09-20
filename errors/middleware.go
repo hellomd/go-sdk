@@ -1,8 +1,12 @@
 package errors
 
 import (
+	"errors"
 	"net/http"
 	"strings"
+
+	raven "github.com/getsentry/raven-go"
+	"github.com/hellomd/go-sdk/recovery/sentry"
 
 	"bytes"
 
@@ -51,7 +55,11 @@ type Middleware interface {
 }
 
 type middleware struct {
+	captureError CaptureError
 }
+
+// CaptureError -
+type CaptureError func(err error, tags map[string]string, interfaces ...raven.Interface) string
 
 // NewMiddleware -
 func NewMiddleware() Middleware {
@@ -59,6 +67,12 @@ func NewMiddleware() Middleware {
 }
 
 func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	if mw.captureError == nil {
+		if sentry, err := sentry.GetFromCtx(r.Context()); err == nil {
+			mw.captureError = sentry.CaptureError
+		}
+	}
+
 	eWriter := newErrorReponseWriter(w)
 	next(eWriter, r)
 
@@ -73,6 +87,11 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 	}
 
 	if eWriter.status >= http.StatusInternalServerError {
+		if mw.captureError != nil {
+			stringErr := string(eWriter.body.Bytes())
+			stringErr = stringErr[0 : len(stringErr)-1]
+			mw.captureError(errors.New(stringErr), nil)
+		}
 		json.NewEncoder(eWriter.ResponseWriter).Encode(&JSONError{Code: errorCode(eWriter.status), Message: "internal server error"})
 	}
 }
