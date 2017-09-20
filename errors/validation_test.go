@@ -3,6 +3,7 @@ package errors
 import "testing"
 import "encoding/json"
 import "reflect"
+import "fmt"
 
 // BasicInfo -
 type BasicInfo struct {
@@ -37,5 +38,15 @@ func TestValidator(t *testing.T) {
 
 	if !reflect.DeepEqual(expctedError, resp) {
 		t.Errorf("Expected error to be %v, go %v", expctedError, resp)
+	}
+}
+
+func TestIsValidationError(t *testing.T) {
+	if !IsValidationError(new(validationError)) {
+		t.Error("expected to be validation error")
+	}
+
+	if IsValidationError(fmt.Errorf("anything")) {
+		t.Error("expected to not be validation error")
 	}
 }

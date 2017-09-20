@@ -69,3 +69,12 @@ func (v *validationError) Error() string {
 	return string(b)
 
 }
+
+// IsValidationError returns whether an error is result of a validation or not
+func IsValidationError(err error) bool {
+	if _, ok := err.(*validationError); ok {
+		return true
+	}
+
+	return false
+}
