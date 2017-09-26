@@ -47,6 +47,8 @@ func (c *Publisher) Publish(key string, body interface{}, headers map[string]str
 		return fmt.Errorf("error opening AMQP channel: %v", err)
 	}
 
+	defer ch.Close()
+
 	bodyJSON, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("error marshalling body: %v", err)
