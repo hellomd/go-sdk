@@ -77,6 +77,8 @@ func (c *Publisher) bootstrap() error {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
 	}
 
+	defer ch.Close()
+
 	if err := ch.ExchangeDeclare(ExchangeName, amqp.ExchangeTopic, durable, autoDelete, internal, noWait, nil); err != nil {
 		return fmt.Errorf("error declaring exchange: %v", err)
 	}
