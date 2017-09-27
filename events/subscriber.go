@@ -4,8 +4,9 @@ import "context"
 import "github.com/sirupsen/logrus"
 
 const (
-	baseRetryDelay float64 = 10
-	maxRetryDelay  float64 = 5000
+	baseRetryDelay     float64 = 10
+	maxRetryDelay      float64 = 5000
+	defaultConcurrency         = 5
 )
 
 // NewSubscriber creates a new client that can subscribe to events
@@ -13,14 +14,15 @@ const (
 // This subscriber is concurrent safe and has no initialization logic.
 // Feel free to use whatever lifecycle you think is best for it.
 func NewSubscriber(name, amqpURL string, logger *logrus.Logger) *Subscriber {
-	return &Subscriber{name, amqpURL, logger}
+	return &Subscriber{name, amqpURL, logger, defaultConcurrency}
 }
 
 // Subscriber is a client that can subscribe to events
 type Subscriber struct {
-	name    string
-	amqpURL string
-	logger  *logrus.Logger
+	name        string
+	amqpURL     string
+	logger      *logrus.Logger
+	Concurrency int
 }
 
 // Subscribe creates a new subscription for receiving events with keys that match the given pattern
@@ -30,6 +32,7 @@ func (s *Subscriber) Subscribe(pattern string) (*Subscription, error) {
 		amqpURL:        s.amqpURL,
 		pattern:        pattern,
 		errors:         make(chan error),
+		concurrency:    int(float64(s.Concurrency) * 1.2),
 	}
 
 	ch, rcv, err := sub.init()

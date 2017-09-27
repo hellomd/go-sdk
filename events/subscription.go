@@ -15,9 +15,10 @@ type Subscription struct {
 	pattern        string
 	errors         chan error
 
-	events     chan Event
-	closer     chan struct{}
-	retryCount float64
+	events      chan Event
+	closer      chan struct{}
+	retryCount  float64
+	concurrency int
 }
 
 // Receive returns a channel to which subscription events are passed
@@ -66,6 +67,10 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 
 	if err := ch.QueueBind(queueName, s.pattern, ExchangeName, noWait, nil); err != nil {
 		return nil, nil, fmt.Errorf("error binding subscription queue: %v", err)
+	}
+
+	if err := ch.Qos(s.concurrency, 0, false); err != nil {
+		return nil, nil, fmt.Errorf("error setting QoS: %v", err)
 	}
 
 	rcv, err := ch.Consume(queueName, s.subscriberName, autoAck, exclusive, noLocal, noWait, nil)
