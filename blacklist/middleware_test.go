@@ -53,10 +53,10 @@ func TestHealthcheckRequest(t *testing.T) {
 }
 
 func TestBlacklistedRequest(t *testing.T) {
-	notCalled := true
 	mw := NewMiddleware().(*middleware)
 
 	for _, x := range blacklist {
+		notCalled := true
 		req := httptest.NewRequest("GET", x, nil)
 		response := httptest.NewRecorder()
 
