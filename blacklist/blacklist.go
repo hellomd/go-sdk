@@ -108,4 +108,11 @@ var blacklist = []string{
 	"/mysql/dbadmin/",
 	"/mysql/sqlmanager/",
 	"/mysql/admin/",
+	"/MyAdmin/scripts/setup.php",
+	"/myadmin/scripts/setup.php",
+	"/pma/scripts/setup.php",
+	"/phpmyadmin/scripts/setup.php",
+	"/muieblackcat",
+	"/phpMyAdmin/scripts/setup.php",
+	"/muieblackcat",
 }
