@@ -40,8 +40,8 @@ type Publisher struct {
 	rlock, wlock sync.Mutex
 }
 
-// Publish publishes an event
-func (c *Publisher) Publish(key string, body interface{}, headers map[string]string) error {
+// PublishH publishes an event with custom headers
+func (c *Publisher) PublishH(key string, body interface{}, headers map[string]string) error {
 	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)
