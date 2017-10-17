@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -40,8 +41,18 @@ type Publisher struct {
 	rlock, wlock sync.Mutex
 }
 
-// Publish publishes an event
-func (c *Publisher) Publish(key string, body interface{}, headers map[string]string) error {
+// Publish publishes an event with default headers
+func (c *Publisher) Publish(ctx context.Context, key string, body interface{}) error {
+	h, err := DefaultHeaders(ctx)
+	if err != nil {
+		return err
+	}
+
+	return c.PublishH(key, body, h)
+}
+
+// PublishH publishes an event with custom headers
+func (c *Publisher) PublishH(key string, body interface{}, headers map[string]string) error {
 	ch, err := newChannel(c.amqpURL)
 	if err != nil {
 		return fmt.Errorf("error opening AMQP channel: %v", err)

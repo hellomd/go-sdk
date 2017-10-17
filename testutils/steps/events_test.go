@@ -17,8 +17,8 @@ func TestTheFollowingEventsShouldHaveBeenPublished(t *testing.T) {
 		})
 
 		pub := new(fakes.Publisher)
-		pub.Publish("some.key", "foo", nil)
-		pub.Publish("some.key", "bar", nil)
+		pub.PublishH("some.key", "foo", nil)
+		pub.PublishH("some.key", "bar", nil)
 
 		// Act
 		err := TheFollowingEventsShouldHaveBeenPublished(table, pub)
@@ -37,7 +37,7 @@ func TestTheFollowingEventsShouldHaveBeenPublished(t *testing.T) {
 		})
 
 		pub := new(fakes.Publisher)
-		pub.Publish("some.key", map[string]interface{}{"id": "one", "size": 3}, nil)
+		pub.PublishH("some.key", map[string]interface{}{"id": "one", "size": 3}, nil)
 
 		// Act
 		err := TheFollowingEventsShouldHaveBeenPublished(table, pub)
@@ -72,7 +72,7 @@ func TestTheFollowingEventsShouldHaveBeenPublished(t *testing.T) {
 		})
 
 		pub := new(fakes.Publisher)
-		pub.Publish("some.key", "foo", nil)
+		pub.PublishH("some.key", "foo", nil)
 
 		// Act
 		err := TheFollowingEventsShouldHaveBeenPublished(table, pub)
@@ -91,8 +91,8 @@ func TestTheFollowingEventsShouldHaveBeenPublished(t *testing.T) {
 		})
 
 		pub := new(fakes.Publisher)
-		pub.Publish("some.key", "foo", nil)
-		pub.Publish("some.key", "bar", nil)
+		pub.PublishH("some.key", "foo", nil)
+		pub.PublishH("some.key", "bar", nil)
 
 		// Act
 		err := TheFollowingEventsShouldHaveBeenPublished(table, pub)
@@ -111,7 +111,7 @@ func TestTheFollowingEventsShouldHaveBeenPublished(t *testing.T) {
 		})
 
 		pub := new(fakes.Publisher)
-		pub.Publish("some.key", map[string]interface{}{"id": "oh no!", "size": 999}, nil)
+		pub.PublishH("some.key", map[string]interface{}{"id": "oh no!", "size": 999}, nil)
 
 		// Act
 		err := TheFollowingEventsShouldHaveBeenPublished(table, pub)

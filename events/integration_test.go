@@ -70,11 +70,11 @@ func TestPublishSubscribe(t *testing.T) {
 		}
 	}()
 
-	if err := publisher.Publish("questions.article.created", map[string]string{"foo": "bar"}, nil); err != nil {
+	if err := publisher.PublishH("questions.article.created", map[string]string{"foo": "bar"}, nil); err != nil {
 		t.Error(err)
 	}
 
-	if err := publisher.Publish("questions.product.created", map[string]int{"one": 1}, nil); err != nil {
+	if err := publisher.PublishH("questions.product.created", map[string]int{"one": 1}, nil); err != nil {
 		t.Error(err)
 	}
 

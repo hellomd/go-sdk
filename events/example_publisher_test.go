@@ -12,7 +12,7 @@ func ExamplePublisher() {
 		panic(fmt.Errorf("there was a problem asserting AMQP structure: %v", err))
 	}
 
-	err = pub.Publish("questions.article.created", map[string]interface{}{
+	err = pub.PublishH("questions.article.created", map[string]interface{}{
 		"id":    "abc123",
 		"title": "What is the meaning of life?",
 	}, nil)
