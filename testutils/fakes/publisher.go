@@ -1,6 +1,7 @@
 package fakes
 
 import (
+	"context"
 	"sync"
 
 	"encoding/json"
@@ -15,8 +16,12 @@ type Publisher struct {
 	published []events.Event
 }
 
+func (p *Publisher) Publish(ctx context.Context, key string, body interface{}) error {
+	return p.PublishH(key, body, map[string]string{})
+}
+
 // Publish stores in the publisher instance the events that were published by it
-func (p *Publisher) Publish(key string, body interface{}, header map[string]string) error {
+func (p *Publisher) PublishH(key string, body interface{}, header map[string]string) error {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
@@ -42,5 +47,6 @@ var _ publisher = &Publisher{}
 var _ publisher = &events.Publisher{}
 
 type publisher interface {
-	Publish(key string, body interface{}, header map[string]string) error
+	Publish(ctx context.Context, key string, body interface{}) error
+	PublishH(key string, body interface{}, header map[string]string) error
 }
