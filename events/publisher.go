@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -38,6 +39,16 @@ func NewPublisher(amqpURL string) (*Publisher, error) {
 type Publisher struct {
 	amqpURL      string
 	rlock, wlock sync.Mutex
+}
+
+// Publish publishes an event with default headers
+func (c *Publisher) Publish(ctx context.Context, key string, body interface{}) error {
+	h, err := DefaultHeaders(ctx)
+	if err != nil {
+		return err
+	}
+
+	return c.PublishH(key, body, h)
 }
 
 // PublishH publishes an event with custom headers
