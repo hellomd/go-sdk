@@ -78,6 +78,7 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
 		if isErrorJSON(eWriter.body.Bytes()) {
+			eWriter.Header().Set("Content-Type", "application/json")
 			eWriter.ResponseWriter.Write(eWriter.body.Bytes())
 		} else {
 			resp := &JSONError{Code: errorCode(eWriter.status), Message: string(eWriter.body.Bytes())}
