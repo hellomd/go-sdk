@@ -3,7 +3,6 @@ package recovery
 import (
 	"context"
 	"fmt"
-	"log"
 
 	raven "github.com/getsentry/raven-go"
 	"github.com/hellomd/go-sdk/events"
@@ -27,9 +26,7 @@ func (r *Recovery) Process(ctx context.Context, event *events.Event, next events
 	}
 
 	defer func() {
-		log.Println("lele")
 		if rMsg := recover(); rMsg != nil {
-			log.Println("lala")
 			err := fmt.Errorf("panic recovered: %v", rMsg)
 			event.Reject(false, err)
 			r.handleError(ctx, err)
