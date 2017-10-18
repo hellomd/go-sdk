@@ -10,6 +10,7 @@ import (
 
 // Subscription can receive events to which it subscribes
 type Subscription struct {
+	exchange       string
 	subscriberName string
 	amqpURL        string
 	pattern        string
@@ -65,7 +66,7 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		return nil, nil, fmt.Errorf("error declaring queue: %v", err)
 	}
 
-	if err := ch.QueueBind(queueName, s.pattern, ExchangeName, noWait, nil); err != nil {
+	if err := ch.QueueBind(queueName, s.pattern, s.exchange, noWait, nil); err != nil {
 		return nil, nil, fmt.Errorf("error binding subscription queue: %v", err)
 	}
 
