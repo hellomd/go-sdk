@@ -91,3 +91,21 @@ func TestError404(t *testing.T) {
 	}
 
 }
+
+func TestContentTypeHeaders(t *testing.T) {
+
+	srv := negroni.New(NewMiddleware())
+
+	srv.UseFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		http.Error(w, "User 420 not found", http.StatusNotFound)
+	})
+
+	response := httptest.NewRecorder()
+
+	srv.ServeHTTP(response, httptest.NewRequest("GET", "/", nil))
+
+	if response.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("Unexptected Content-Type:%v", response.Header().Get("Content-Type"))
+	}
+
+}
