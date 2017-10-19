@@ -46,7 +46,9 @@ func (erw *errorReponseWriter) Write(data []byte) (int, error) {
 
 func (erw *errorReponseWriter) WriteHeader(code int) {
 	erw.status = code
-	erw.ResponseWriter.WriteHeader(code)
+	if !(erw.status == 0 || erw.status >= 400) {
+		erw.ResponseWriter.WriteHeader(code)
+	}
 }
 
 // Middleware -
@@ -77,14 +79,15 @@ func (mw *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next htt
 	next(eWriter, r)
 
 	if eWriter.status >= http.StatusBadRequest && eWriter.status < http.StatusInternalServerError {
+		eWriter.Header().Set("Content-Type", "application/json")
+		eWriter.ResponseWriter.WriteHeader(eWriter.status)
 		if isErrorJSON(eWriter.body.Bytes()) {
-			eWriter.Header().Set("Content-Type", "application/json")
 			eWriter.ResponseWriter.Write(eWriter.body.Bytes())
 		} else {
 			resp := &JSONError{Code: errorCode(eWriter.status), Message: string(eWriter.body.Bytes())}
-			eWriter.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(eWriter.ResponseWriter).Encode(resp)
 		}
+
 	}
 
 	if eWriter.status >= http.StatusInternalServerError {
