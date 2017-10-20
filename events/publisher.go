@@ -35,7 +35,7 @@ func NewPublisher(amqpURL string) (*Publisher, error) {
 // This publisher is concurrent safe and should be reused as much as possible
 // because of its initialization logic that involves declaring the RabbitMQ exchange.
 func NewPublisherCustom(amqpURL, exchange string) (*Publisher, error) {
-	c := &Publisher{amqpURL: amqpURL, exchange: exchange}
+	c := &Publisher{amqpURL: amqpURL, Exchange: exchange}
 	if err := c.bootstrap(); err != nil {
 		return nil, fmt.Errorf("error bootstrapping events: %v", err)
 	}
@@ -45,8 +45,8 @@ func NewPublisherCustom(amqpURL, exchange string) (*Publisher, error) {
 
 // Publisher is a client that can publish events
 type Publisher struct {
+	Exchange     string
 	amqpURL      string
-	exchange     string
 	rlock, wlock sync.Mutex
 }
 
@@ -84,7 +84,7 @@ func (c *Publisher) PublishH(key string, body interface{}, headers map[string]st
 		Headers: headersTable,
 	}
 
-	if err := ch.Publish(c.exchange, key, mandatory, immediate, pub); err != nil {
+	if err := ch.Publish(c.Exchange, key, mandatory, immediate, pub); err != nil {
 		return fmt.Errorf("error publishing event: %v", err)
 	}
 
@@ -99,7 +99,7 @@ func (c *Publisher) bootstrap() error {
 
 	defer ch.Close()
 
-	if err := ch.ExchangeDeclare(c.exchange, amqp.ExchangeTopic, durable, autoDelete, internal, noWait, nil); err != nil {
+	if err := ch.ExchangeDeclare(c.Exchange, amqp.ExchangeTopic, durable, autoDelete, internal, noWait, nil); err != nil {
 		return fmt.Errorf("error declaring exchange: %v", err)
 	}
 
