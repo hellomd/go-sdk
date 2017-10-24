@@ -46,7 +46,7 @@ func ExtractPerPage(query map[string][]string, pager Pager) error {
 		return err
 	}
 	if perPage > maxPerPage {
-		return ErrMaxPerPageExceeded
+		pager.SetPerPage(maxPerPage)
 	}
 	if perPage != 0 {
 		pager.SetPerPage(perPage)
