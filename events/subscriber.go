@@ -14,7 +14,7 @@ const (
 // This subscriber is concurrent safe and has no initialization logic.
 // Feel free to use whatever lifecycle you think is best for it.
 func NewSubscriber(name, amqpURL string, logger *logrus.Logger) *Subscriber {
-	return &Subscriber{name, amqpURL, logger, defaultConcurrency, ExchangeName}
+	return &Subscriber{name, amqpURL, logger, defaultConcurrency, ExchangeName, 0}
 }
 
 // Subscriber is a client that can subscribe to events
@@ -24,12 +24,14 @@ type Subscriber struct {
 	logger      *logrus.Logger
 	Concurrency int
 	Exchange    string
+	MaxPriority    uint8
 }
 
 // Subscribe creates a new subscription for receiving events with keys that match the given pattern
 func (s *Subscriber) Subscribe(pattern string) (*Subscription, error) {
 	sub := &Subscription{
 		exchange:       s.Exchange,
+		maxPriority:       s.MaxPriority,
 		subscriberName: s.name,
 		amqpURL:        s.amqpURL,
 		pattern:        pattern,
