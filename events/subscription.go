@@ -11,6 +11,7 @@ import (
 // Subscription can receive events to which it subscribes
 type Subscription struct {
 	exchange       string
+	maxPriority    uint8
 	subscriberName string
 	amqpURL        string
 	pattern        string
@@ -62,7 +63,11 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		return nil, nil, fmt.Errorf("error opening AMQP channel: %v", err)
 	}
 
-	if _, err := ch.QueueDeclare(queueName, durable, autoDelete, exclusive, noWait, nil); err != nil {
+	var queueArgs amqp.Table
+	if s.maxPriority > 0 {
+		queueArgs = amqp.Table{"x-max-priority": s.maxPriority}
+	}
+	if _, err := ch.QueueDeclare(queueName, durable, autoDelete, exclusive, noWait, queueArgs); err != nil {
 		return nil, nil, fmt.Errorf("error declaring queue: %v", err)
 	}
 

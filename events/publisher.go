@@ -35,7 +35,7 @@ func NewPublisher(amqpURL string) (*Publisher, error) {
 // This publisher is concurrent safe and should be reused as much as possible
 // because of its initialization logic that involves declaring the RabbitMQ exchange.
 func NewPublisherCustom(amqpURL, exchange string) (*Publisher, error) {
-	c := &Publisher{amqpURL: amqpURL, Exchange: exchange}
+	c := &Publisher{amqpURL: amqpURL, Exchange: exchange, Priority: 1}
 	if err := c.bootstrap(); err != nil {
 		return nil, fmt.Errorf("error bootstrapping events: %v", err)
 	}
@@ -46,6 +46,7 @@ func NewPublisherCustom(amqpURL, exchange string) (*Publisher, error) {
 // Publisher is a client that can publish events
 type Publisher struct {
 	Exchange     string
+	Priority     uint8
 	amqpURL      string
 	rlock, wlock sync.Mutex
 }
@@ -80,8 +81,9 @@ func (c *Publisher) PublishH(key string, body interface{}, headers map[string]st
 	}
 
 	pub := amqp.Publishing{
-		Body:    bodyJSON,
-		Headers: headersTable,
+		Body:     bodyJSON,
+		Headers:  headersTable,
+		Priority: c.Priority,
 	}
 
 	if err := ch.Publish(c.Exchange, key, mandatory, immediate, pub); err != nil {
