@@ -62,7 +62,8 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		return nil, nil, fmt.Errorf("error opening AMQP channel: %v", err)
 	}
 
-	if _, err := ch.QueueDeclare(queueName, durable, autoDelete, exclusive, noWait, nil); err != nil {
+	queueArgs := amqp.Table{"x-max-priority": 1}
+	if _, err := ch.QueueDeclare(queueName, durable, autoDelete, exclusive, noWait, queueArgs); err != nil {
 		return nil, nil, fmt.Errorf("error declaring queue: %v", err)
 	}
 
