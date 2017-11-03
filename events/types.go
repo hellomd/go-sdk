@@ -4,6 +4,8 @@ import (
 	"context"
 )
 
+const AMQPURLCfgKey = "AMQP_URL"
+
 // Acknowledger sends feedback on whether the event has been successfully processed or not
 type Acknowledger interface {
 	Reject(bool, error)
