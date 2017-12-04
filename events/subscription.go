@@ -63,6 +63,11 @@ func (s *Subscription) init() (*amqp.Channel, <-chan amqp.Delivery, error) {
 		return nil, nil, fmt.Errorf("error opening AMQP channel: %v", err)
 	}
 
+	err = ch.ExchangeDeclare(s.exchange, amqp.ExchangeTopic, durable, autoDelete, internal, noWait, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error declaring exchange: %s", err)
+	}
+
 	var queueArgs amqp.Table
 	if s.maxPriority > 0 {
 		queueArgs = amqp.Table{"x-max-priority": s.maxPriority}
