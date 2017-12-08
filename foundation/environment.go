@@ -1,7 +1,6 @@
 package foundation
 
 import (
-	"github.com/hellomd/go-sdk/config"
 	"github.com/urfave/negroni"
 )
 
@@ -18,10 +17,5 @@ type Environment struct {
 
 // NewEnv -
 func NewEnv() *Environment {
-	switch config.Get(EnvCfgKey) {
-	case prodEnv, stagEnv:
-		return newProdEnv()
-	default:
-		return newDevEnv()
-	}
+	return newProdEnv()
 }
