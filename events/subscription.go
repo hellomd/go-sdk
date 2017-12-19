@@ -98,6 +98,7 @@ func (s *Subscription) receiveLoop(ch *amqp.Channel, rcv <-chan amqp.Delivery) e
 	for {
 		select {
 		case err := <-chCloser: // reconnect
+			s.logError(fmt.Errorf("receiveLoop chCloser: ", err))
 			return err
 		case delivery := <-rcv: // send event
 			if delivery.Acknowledger != nil { // safeguard against closed channel sends
