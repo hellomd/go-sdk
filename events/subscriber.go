@@ -47,7 +47,15 @@ func (s *Subscriber) Subscribe(pattern string) (*Subscription, error) {
 	go func() {
 		err := sub.receiveLoop(ch, rcv)
 		if err != nil {
+			s.logger.WithFields(logrus.Fields{
+				"error":        err,
+				"subscription": pattern,
+			}).Info("will start subscription retry loop 1")
 			sub.retryLoop()
+			s.logger.WithFields(logrus.Fields{
+				"error":        err,
+				"subscription": pattern,
+			}).Info("finished subscription retry loop 1")
 		}
 	}()
 
@@ -70,14 +78,25 @@ func (s *Subscriber) SubscribeH(pattern string, handler Handler) error {
 			case <-closer:
 				s.logger.WithFields(logrus.Fields{
 					"subscription": pattern,
-				}).Error("Subscription handler got close connection message")
+				}).Error("subscription handler got close connection message")
 				return
 
 			case err := <-errs:
 				s.logger.WithFields(logrus.Fields{
 					"error":        err,
 					"subscription": pattern,
-				}).Error("Subscription handler got error")
+				}).Error("subscription handler got error")
+				s.logger.WithFields(logrus.Fields{
+					"error":        err,
+					"subscription": pattern,
+				}).Info("will start subscription retry loop 2")
+
+				sub.retryLoop()
+
+				s.logger.WithFields(logrus.Fields{
+					"error":        err,
+					"subscription": pattern,
+				}).Info("finished subscription retry loop 2")
 
 			case event := <-receiver:
 				ctx := context.Background()
@@ -87,7 +106,7 @@ func (s *Subscriber) SubscribeH(pattern string, handler Handler) error {
 							s.logger.WithFields(logrus.Fields{
 								"error":        r,
 								"subscription": pattern,
-							}).Error("Subscription handler panicked")
+							}).Error("subscription handler panicked")
 						}
 					}()
 					handler.Process(ctx, &event)
